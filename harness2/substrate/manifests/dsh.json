@@ -1,0 +1,67 @@
+{
+  "name": "dsh",
+  "label": "DSH (DeepSeek Harness)",
+  "surface": {
+    "always_on": [
+      "AGENTS.md"
+    ],
+    "always_on_max": 24000,
+    "always_on_cap_reason": "DSH injects the instruction baseline on every step and bounds it by maxBytes; always-on text is paid every turn",
+    "skill_dir": "skills",
+    "skill_name_rule": "must_match",
+    "skills_auto_advertised": true,
+    "subagents_supported": false,
+    "subagent_dir": "sub_agents",
+    "plugin_dir": null,
+    "hooks_file": null,
+    "compile_skill_scripts": true,
+    "reject_empty_always_on": true,
+    "trigger_line": "- When {desc}, load the `{name}` skill.\n",
+    "trigger_hint": "Skills are advertised by name+description; make the description name the situation.",
+    "stubs": [
+      {
+        "path": "skills/README.md",
+        "body": "<!-- c6: DSH skills. Add one as skills/<name>/SKILL.md with YAML frontmatter `name:` (matching the directory) and `description:`. The body is read on demand; helpers travel inside the skill under scripts/. -->\n"
+      },
+      {
+        "path": "scripts/README.md",
+        "body": "<!-- c7: deterministic helpers, run as `python3 scripts/<name>.py`. -->\n"
+      }
+    ]
+  },
+  "install": {
+    "mode": "home_dir",
+    "root": ".dsh",
+    "entries": [
+      "AGENTS.md",
+      "skills",
+      "scripts"
+    ],
+    "seed_env": "DSH_HOME",
+    "seed_default": "~/.dsh",
+    "seed_files": [
+      "settings.yaml",
+      ".credentials.yaml",
+      ".env"
+    ]
+  },
+  "exec": {
+    "argv": [
+      "{bin}",
+      "--profile",
+      "headless",
+      "{prompt}"
+    ],
+    "bin_env": "HARNESS2_DSH_BIN",
+    "default_bin": "dsh",
+    "timeout": 3600,
+    "env": {
+      "DSH_HOME": "{home}",
+      "DSH_PERMISSION_MODE": "danger-full-access"
+    }
+  },
+  "trajectory": {
+    "format": "text",
+    "path": "session.log"
+  }
+}

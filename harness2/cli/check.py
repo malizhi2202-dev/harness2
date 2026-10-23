@@ -17,19 +17,23 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
-from harness2.cli._common import make_adapter
+from harness2.cli._common import BENCHES, SUBSTRATES, make_adapter
 from harness2.preflight import check
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--bench", choices=("jb", "lab", "wb"), required=True)
+    p.add_argument("--bench", choices=BENCHES, required=True)
     p.add_argument("--subset", choices=("office", "web", "code"))
-    p.add_argument("--substrate", choices=("oc", "cx"), default="oc")
+    p.add_argument("--substrate", choices=SUBSTRATES, default="oc")
+    p.add_argument("--local-tasks", type=Path, default=None, help="local bench only")
     args = p.parse_args(argv)
     try:
-        adapter = make_adapter(args.bench, args.subset, args.substrate)
+        adapter = make_adapter(
+            args.bench, args.subset, args.substrate, local_tasks=args.local_tasks
+        )
         errors = check(adapter, judge=True)
     except (OSError, RuntimeError, ValueError) as exc:
         errors = [str(exc)]

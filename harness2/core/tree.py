@@ -59,14 +59,29 @@ class SurfaceSpec:
 
     stubs: tuple[tuple[str, str], ...] = ()
 
+    # Substrate-agnostic extension points (defaults keep the oc/cx surfaces byte-identical).
+    subagent_dir: str = "sub_agents"
+    hooks_schema: str = "claude"
+    prompt_md: str = ""
+    # Some frameworks advertise every skill by name+description, so a trigger line in the
+    # always-on text is unnecessary; others have no editable subagent surface at all.
+    skills_auto_advertised: bool = False
+    subagents_supported: bool = True
+
 
 @lru_cache(maxsize=8)
-def _res(surface_name: str, skill_dir: str, plugin_dir: str | None) -> dict[str, re.Pattern]:
+def _res(
+    surface_name: str,
+    skill_dir: str,
+    plugin_dir: str | None,
+    subagent_dir: str = "sub_agents",
+) -> dict[str, re.Pattern]:
     sd = re.escape(skill_dir)
+    sa = re.escape(subagent_dir)
     out = {
         "skill": re.compile(rf"{sd}/({_NAME})/SKILL\.md"),
         "skill_script": re.compile(rf"{sd}/{_NAME}/scripts/[A-Za-z0-9_.\-]+"),
-        "subagent": re.compile(rf"sub_agents/({_NAME})/AGENT\.md"),
+        "subagent": re.compile(rf"{sa}/({_NAME})/(?:AGENT\.md|SKILL\.md)"),
         "script": re.compile(r"scripts/[a-z0-9_][a-z0-9_]*\.py"),
         "script_ref": re.compile(rf"(?:python3?\s+)((?:{sd}/[\w\-]+/)?scripts/[\w.\-]+\.py)"),
     }
@@ -76,7 +91,7 @@ def _res(surface_name: str, skill_dir: str, plugin_dir: str | None) -> dict[str,
 
 
 def _rx(surface: SurfaceSpec) -> dict[str, re.Pattern]:
-    return _res(surface.name, surface.skill_dir, surface.plugin_dir)
+    return _res(surface.name, surface.skill_dir, surface.plugin_dir, surface.subagent_dir)
 
 
 def normalize_rel(rel: str) -> str:
@@ -192,8 +207,11 @@ def always_on_text(surface: SurfaceSpec, tree: Tree) -> str:
 def autotrigger(surface: SurfaceSpec, tree: Tree, *, always_on_max: int | None = None) -> list[str]:
     """Give every skill a trigger line in always-on text; return the names repaired.
 
-    A line that would push the body over the always-on cap is skipped instead.
+    A line that would push the body over the always-on cap is skipped instead. Frameworks
+    that advertise skills themselves (`skills_auto_advertised`) need no repair.
     """
+    if surface.skills_auto_advertised:
+        return []
     cap = surface.always_on_max if always_on_max is None else always_on_max
     body = always_on_text(surface, tree)
     fixed: list[str] = []
@@ -222,6 +240,12 @@ def check_hooks(surface: SurfaceSpec, src: str, errs: list[str]) -> None:
         doc = json.loads(src)
     except json.JSONDecodeError as exc:
         errs.append(f"{hf} is not valid JSON: {exc}")
+        return
+    if surface.hooks_schema == "none":
+        return
+    if surface.hooks_schema != "claude":
+        if not isinstance(doc, dict) or not doc:
+            errs.append(f"{hf} must be a non-empty JSON object for the {surface.hooks_schema} hooks schema")
         return
     hooks = doc.get("hooks") if isinstance(doc, dict) else None
     if not isinstance(hooks, dict) or not hooks:
@@ -289,7 +313,7 @@ def _check_skills(surface: SurfaceSpec, tree: Tree, body: str, errs: list[str]) 
                 f"trigger line naming `{name}` stops matching; drop the `name:` line "
                 f"or make it `name: {name}`"
             )
-        if name not in body:
+        if name not in body and not surface.skills_auto_advertised:
             errs.append(
                 f"skill '{name}' is never named in the always-on text, so the agent "
                 f"will not know to invoke it — an untriggered skill is dead weight. "
@@ -298,19 +322,36 @@ def _check_skills(surface: SurfaceSpec, tree: Tree, body: str, errs: list[str]) 
     return skills
 
 
+def _subagent_file(surface: SurfaceSpec, tree: Tree, name: str) -> str:
+    """The file that actually backs this subagent (AGENT.md preferred, SKILL.md accepted)."""
+    for rel in (
+        f"{surface.subagent_dir}/{name}/AGENT.md",
+        f"{surface.subagent_dir}/{name}/SKILL.md",
+    ):
+        if rel in tree:
+            return rel
+    return f"{surface.subagent_dir}/{name}/AGENT.md"
+
+
 def _check_subagents(
     surface: SurfaceSpec, tree: Tree, allow_subagents: bool, errs: list[str]
 ) -> list[str]:
     """Append every sub-agent problem; return the sub-agent names."""
     subs = subagent_names(surface, tree)
-    if subs and not allow_subagents:
-        errs.append(f"sub_agents are not available on this deployment: {subs}")
+    if subs and not surface.subagents_supported:
+        errs.append(
+            f"this substrate exposes no editable subagent surface: {subs} "
+            f"(use a skill, a script, or an in-loop hook instead)"
+        )
+    elif subs and not allow_subagents:
+        errs.append(f"subagents are not available on this deployment: {subs}")
     for name in subs:
-        fm = tree[f"sub_agents/{name}/AGENT.md"][:600]
+        rel = _subagent_file(surface, tree, name)
+        fm = tree[rel][:600] if rel in tree else ""
         if surface.subagent_requires_mode and not re.search(r"^mode:\s*subagent\s*$", fm, re.M):
-            errs.append(f"sub_agents/{name}/AGENT.md needs frontmatter `mode: subagent`")
+            errs.append(f"{rel} needs frontmatter `mode: subagent`")
         if not re.search(r"^description:\s*\S", fm, re.M):
-            errs.append(f"sub_agents/{name}/AGENT.md needs a `description:`")
+            errs.append(f"{rel} needs a `description:`")
     return subs
 
 

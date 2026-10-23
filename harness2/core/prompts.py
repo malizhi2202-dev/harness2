@@ -662,14 +662,122 @@ def _build_surface_texts() -> dict[str, _SurfaceText]:
 
 
 _SURFACE_TEXTS = _build_surface_texts()
+_GENERIC_CACHE: dict[str, _SurfaceText] = {}
+
+
+def _surface_md_from_spec(surface: SurfaceSpec) -> str:
+    """A complete editable-surface brief derived from a SurfaceSpec.
+
+    Used for every substrate without a hand-written surface text (DSH, Hermes, manifests),
+    so adding a framework never means copying this file.
+    """
+    always_on = " / ".join(f"`{p}`" for p in surface.always_on)
+    rules = [
+        (
+            "Skills are advertised by their name and description, so the description must "
+            "name the situation that should trigger the skill."
+            if surface.skills_auto_advertised
+            else "EVERY SKILL NEEDS A TRIGGER LINE in the always-on text, written in the same edit."
+        ),
+        f"Any helper a skill calls must ship at `{surface.skill_dir}/<skill>/scripts/<file>`; "
+        "a helper in the skill directory itself is off the surface and is dropped.",
+        "ALWAYS-ON PROSE IS THE EXPENSIVE OPTION: prefer a skill for a procedure, a script for "
+        "a deterministic operation, a subagent for one bounded investigation.",
+        "Change only what a trajectory shows needs changing; every edit names its moment.",
+    ]
+    if surface.plugin_dir:
+        rules.append(
+            f"`{surface.plugin_dir}/<name>` acts INSIDE the tool loop: it cannot be skipped, and "
+            "it costs nothing in the always-on budget."
+        )
+    if surface.hooks_file:
+        rules.append(
+            f"`{surface.hooks_file}` is the lifecycle-hook lever; only the schema the framework "
+            "actually dispatches is accepted, and a malformed hook never fires."
+        )
+    if surface.subagents_supported:
+        rules.append(
+            f"`{surface.subagent_dir}/<name>/` runs in its OWN context and returns text; worth it "
+            "only when the input is large and the answer is small."
+        )
+    table = [
+        "| path | what it is | when it is in context |",
+        "|---|---|---|",
+        f"| {always_on} | role, rules, durable facts | ALWAYS ON |",
+        f"| `{surface.skill_dir}/<name>/SKILL.md` | reusable workflow | name+description advertised, body on demand |",
+        "| `scripts/<name>.py` | deterministic helper | run on demand |",
+    ]
+    if surface.subagents_supported:
+        table.insert(
+            4,
+            f"| `{surface.subagent_dir}/<name>/AGENT.md` | delegated role | own context, returns text |",
+        )
+    if surface.plugin_dir:
+        table.append(f"| `{surface.plugin_dir}/<name>` | in-loop plugin | every matching tool call |")
+    if surface.hooks_file:
+        table.append(f"| `{surface.hooks_file}` | lifecycle hooks | every matching event |")
+    return "\n\n".join(
+        [
+            "# WHAT YOU CAN CHANGE",
+            "\n".join(table),
+            f"The always-on budget is {surface.always_on_max:,} characters: {surface.always_on_cap_reason}",
+            "\n".join(f"- {r}" for r in rules),
+            "# HOW TO MAKE A CHANGE",
+            "The harness is in `context/harness/`, and it is YOURS TO EDIT. Files you do not "
+            "touch are inherited unchanged; delete a file to remove that component. Your edits "
+            "on disk ARE the proposal. If the evidence does not argue for a change, leave "
+            "everything and say KEEP_BASE in your notes.",
+        ]
+    )
+
+
+def _generic_surface_text(surface: SurfaceSpec) -> _SurfaceText:
+    got = _GENERIC_CACHE.get(surface.name)
+    if got is not None:
+        return got
+    md = surface.prompt_md or _surface_md_from_spec(surface)
+    if surface.plugin_dir:
+        lever = (
+            f"`{surface.plugin_dir}/<name>` in-loop plugin -- for example, preventing exit "
+            "before a {deliverable} exists"
+        )
+    elif surface.hooks_file:
+        lever = (
+            f"a command hook in `{surface.hooks_file}` -- for example, blocking a finish before "
+            "a {deliverable} exists, with a corrective reason"
+        )
+    else:
+        lever = (
+            "a skill plus a script -- this substrate exposes no in-loop hook, so the strongest "
+            "available lever is an on-demand procedure with a deterministic check"
+        )
+    trigger = (
+        "A skill is advertised by its name and description: make the description name the "
+        "situation that should trigger it."
+        if surface.skills_auto_advertised
+        else (
+            f"A skill exists only once its name appears in `{surface.always_on[0]}` as a "
+            "trigger: write that trigger line in the same edit."
+        )
+    )
+    out = _SurfaceText(
+        surface_md=md,
+        inv=_INV_TEMPLATE.replace("__LOOP_LEVER__", lever),
+        dom=_DOM_TEMPLATE.replace("__TRIGGER_SENTENCE__", trigger),
+        tts_surface=md,
+    )
+    _GENERIC_CACHE[surface.name] = out
+    return out
 
 
 def _st(surface: SurfaceSpec | str) -> _SurfaceText:
     name = surface if isinstance(surface, str) else surface.name
     got = _SURFACE_TEXTS.get(name)
-    if got is None:
+    if got is not None:
+        return got
+    if isinstance(surface, str):
         raise ValueError(f"no prompt surface for {name!r}; known: {sorted(_SURFACE_TEXTS)}")
-    return got
+    return _generic_surface_text(surface)
 
 
 def _tts_propose(bp: BenchPrompts, dim: str, st: _SurfaceText, *, k: int, index: int) -> str:

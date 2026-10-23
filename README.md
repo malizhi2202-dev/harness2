@@ -106,6 +106,19 @@ gcloud auth application-default login
 See the [setup guide](docs/SETUP.md) for model settings, authentication
 alternatives, and the [Codex executor](docs/SETUP.md#codex-executor).
 
+### Other substrates
+
+The three benchmarks run under OpenCode (`oc`) and Codex (`cx`). **DSH** (`dsh`) and
+**Hermes** (`hermes`) are supported through declarative manifests and run on the `local`
+benchmark against your own task directory; any other agent framework is a JSON manifest
+in `HARNESS2_SUBSTRATE_DIRS` or `~/.harness2/substrates/`. See
+[the substrate guide](docs/SUBSTRATES.md).
+
+```bash
+harness2-check --bench local --substrate dsh
+harness2 --bench local --substrate dsh --k 1 --mode parallel --local-tasks ./my-bench
+```
+
 ## Run a benchmark
 
 The following example installs LAB and runs one task, then evaluates and reports

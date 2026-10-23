@@ -26,6 +26,15 @@ from .substrate.opencode import OpencodeSubstrate
 
 
 def check(adapter, *, judge=False) -> list[str]:
+    """Benchmark-specific readiness. The local benchmark owns its own substrate check."""
+    if getattr(adapter.spec, "name", "") == "local":
+        errors = []
+        for validate in (adapter.substrate.preflight, adapter.tasks, adapter.base_harness):
+            try:
+                validate()
+            except (OSError, RuntimeError, ValueError) as exc:
+                errors.append(str(exc))
+        return errors
     missing = missing_runners()
     if missing:
         return [missing]

@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The two solver substrates behind one interface (substrate/base.py).
+"""Solver substrates behind one interface (substrate/base.py).
 
-`OpencodeSubstrate` carries OPENCODE_SURFACE and three install modes; `CodexSubstrate`
-carries CODEX_SURFACE and one. Benchmark adapters supply the launcher body.
+`OpencodeSubstrate` (oc) and `CodexSubstrate` (cx) are Python classes with native
+benchmark launchers. Everything else is a JSON manifest turned into a `GenericSubstrate`
+(dsh, hermes, or a framework you add); `registry` resolves names, `host` runs a generic
+workspace rollout, and `manifest` owns the schema.
 """
 
 from .base import Install, Launcher, RunRequest, Substrate
 from .codex import CODEX_SURFACE, CodexSubstrate
+from .manifest import GenericSubstrate, SubstrateManifest, discover_manifests, load_manifest
 from .opencode import OPENCODE_SURFACE, OpencodeSubstrate
+from .registry import canonical, choices, create, names, register
 
 __all__ = [
     "Install",
@@ -31,4 +35,13 @@ __all__ = [
     "OPENCODE_SURFACE",
     "CodexSubstrate",
     "CODEX_SURFACE",
+    "GenericSubstrate",
+    "SubstrateManifest",
+    "discover_manifests",
+    "load_manifest",
+    "canonical",
+    "choices",
+    "create",
+    "names",
+    "register",
 ]

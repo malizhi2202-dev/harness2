@@ -1,0 +1,66 @@
+{
+  "name": "hermes",
+  "label": "Hermes Agent",
+  "surface": {
+    "always_on": [
+      "AGENTS.md"
+    ],
+    "always_on_max": 24000,
+    "always_on_cap_reason": "Hermes injects the project instruction file into the context tier every request and truncates it (head/tail) at a configurable limit; keep it short",
+    "skill_dir": "skills",
+    "skill_name_rule": "must_match",
+    "skills_auto_advertised": true,
+    "subagents_supported": false,
+    "subagent_dir": "sub_agents",
+    "plugin_dir": null,
+    "hooks_file": null,
+    "compile_skill_scripts": true,
+    "reject_empty_always_on": true,
+    "trigger_line": "- When {desc}, load the `{name}` skill.\n",
+    "trigger_hint": "Skills are advertised by name+description; make the description name the situation.",
+    "stubs": [
+      {
+        "path": "skills/README.md",
+        "body": "<!-- c6: Hermes skills live at $HERMES_HOME/skills/<name>/SKILL.md; the harness tree's skills/ directory is installed there. YAML frontmatter needs `name:` matching the directory and `description:`. Helpers travel under the skill's own scripts/. -->\n"
+      },
+      {
+        "path": "scripts/README.md",
+        "body": "<!-- c7: deterministic helpers, run as `python3 scripts/<name>.py` from the workspace or via a skill. -->\n"
+      }
+    ]
+  },
+  "install": {
+    "mode": "split",
+    "root": ".hermes",
+    "entries": [
+      "AGENTS.md",
+      "scripts"
+    ],
+    "home_entries": [
+      "skills"
+    ],
+    "seed_env": "HERMES_HOME",
+    "seed_default": "~/.hermes",
+    "seed_files": [
+      "config.yaml",
+      ".env"
+    ]
+  },
+  "exec": {
+    "argv": [
+      "{bin}",
+      "-z",
+      "{prompt}"
+    ],
+    "env": {
+      "HERMES_HOME": "{home}"
+    },
+    "bin_env": "HARNESS2_HERMES_BIN",
+    "default_bin": "hermes",
+    "timeout": 3600
+  },
+  "trajectory": {
+    "format": "text",
+    "path": "session.log"
+  }
+}

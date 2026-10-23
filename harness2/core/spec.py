@@ -126,7 +126,15 @@ class BenchPrompts:
                     )
 
 
-INSTALL_MODES = ("workspace_agents_md", "home_dir_jinja", "workspace_config", "codex_root")
+INSTALL_MODES = (
+    "workspace_agents_md",
+    "home_dir_jinja",
+    "workspace_config",
+    "codex_root",
+    "workspace_root",
+    "home_dir",
+    "split",
+)
 
 
 @dataclass(frozen=True)

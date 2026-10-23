@@ -135,10 +135,18 @@ def _main(args: argparse.Namespace) -> int:
 
     if args.dry_run:
         return _print_stream(
-            C.make_adapter(args.bench, args.subset, args.substrate, args.split_file), args, modes
+            C.make_adapter(
+                args.bench, args.subset, args.substrate, args.split_file,
+                local_tasks=getattr(args, "local_tasks", None),
+            ),
+            args,
+            modes,
         )
 
-    adapter = C.make_adapter(args.bench, args.subset, args.substrate, args.split_file)
+    adapter = C.make_adapter(
+        args.bench, args.subset, args.substrate, args.split_file,
+        local_tasks=getattr(args, "local_tasks", None),
+    )
     _stream_for(adapter, args)
     from ..preflight import require_ready
 
@@ -210,13 +218,13 @@ def _check_identity(adapter, args, namespace_dir: Path) -> None:
     """Prevent a resumed run or library from silently mixing models or task partitions."""
     identity = {
         "method_version": config.METHOD_VERSION,
-        "executor": config.SOLVER_MODEL_OC if args.substrate == "oc" else config.SOLVER_MODEL_CX,
+        "executor": C.executor_model(args.substrate),
         "improver": config.IMPROVER_MODEL,
         "judge": config.JUDGE_MODEL,
         "project": config.VERTEX_PROJECT,
         "location": config.VERTEX_REGION,
         "judge_endpoint": config.JB_JUDGE_API_BASE,
-        "endpoint": config.CODEX_BASE_URL if args.substrate == "cx" else "",
+        "endpoint": config.CODEX_BASE_URL if C.canonical_substrate(args.substrate) == "cx" else "",
         "split": args.split,
         "tasks": _stream_for(adapter, args)[1],
         "max_tasks": args.max_tasks,

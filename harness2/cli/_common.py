@@ -23,13 +23,16 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .. import config
 from ..core import library as LIB
 from ..core import schedule as SCHED
 from ..core.spec import BenchmarkAdapter
+from ..substrate import registry
 
-BENCHES = ("jb", "wb", "lab")
+BENCHES = ("jb", "wb", "lab", "local")
 WB_SUBSETS = ("office", "web", "code")
-SUBSTRATES = ("oc", "cx")
+SUBSTRATES = registry.choices()
+NATIVE_BENCH_SUBSTRATES = ("oc", "cx")
 
 MODES_DEFAULT = "parallel"
 MODES_HELP = (
@@ -42,14 +45,45 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescript
     """Defaults in the help text, module docstring kept verbatim as the description."""
 
 
+def canonical_substrate(name: str) -> str:
+    """Resolve a substrate alias to its canonical name (raises with the known names)."""
+    return registry.canonical(name)
+
+
+def executor_model(substrate: str) -> str:
+    """The model id recorded in a run's identity for this substrate."""
+    key = registry.canonical(substrate).upper()
+    return str(getattr(config, f"SOLVER_MODEL_{key}", "") or config.SOLVER_MODEL_OC)
+
+
 def make_adapter(
-    bench: str, subset: str | None, substrate: str, split_file: Path | None = None
+    bench: str,
+    subset: str | None,
+    substrate: str,
+    split_file: Path | None = None,
+    local_tasks: Path | None = None,
 ) -> BenchmarkAdapter:
     """The one place a CLI turns (--bench, --subset, --substrate) into an adapter."""
     if bench not in BENCHES:
         raise ValueError(f"unknown bench {bench!r}; expected one of {BENCHES}")
-    if substrate not in SUBSTRATES:
-        raise ValueError(f"unknown substrate {substrate!r}; expected one of {SUBSTRATES}")
+    substrate = registry.canonical(substrate)
+    if bench == "local":
+        from ..benchmarks.local import LocalAdapter
+
+        root = local_tasks or (Path(config.LOCAL_TASKS) if config.LOCAL_TASKS else None)
+        if root is None:
+            raise ValueError(
+                "the local benchmark needs a task root: pass --local-tasks DIR or set "
+                "HARNESS2_LOCAL_TASKS (see docs/SUBSTRATES.md for the layout)"
+            )
+        return LocalAdapter(root, substrate=substrate, split_file=split_file)
+    if substrate not in NATIVE_BENCH_SUBSTRATES:
+        raise ValueError(
+            f"{bench} has native launchers only for {NATIVE_BENCH_SUBSTRATES}; "
+            f"{substrate!r} runs through --bench local (docs/SUBSTRATES.md). "
+            "Adding a native launcher for this benchmark is a per-benchmark change, not a "
+            "substrate change."
+        )
     if bench == "wb":
         if subset not in WB_SUBSETS:
             raise ValueError(f"--bench wb needs --subset from {WB_SUBSETS}, got {subset!r} ")
@@ -96,7 +130,7 @@ def summary_namespace(adapter: BenchmarkAdapter, k: int, *, seed: int | None, ta
 
 def add_cell_args(p: argparse._ActionsContainer) -> None:
     """The (benchmark, substrate) cell selectors; `p` may be a parser or an argument group."""
-    p.add_argument("--bench", required=True, choices=BENCHES, help="jb | wb | lab")
+    p.add_argument("--bench", required=True, choices=BENCHES, help="jb | wb | lab | local")
     p.add_argument(
         "--subset", default=None, choices=WB_SUBSETS, help="WB only: office | web | code"
     )
@@ -104,7 +138,13 @@ def add_cell_args(p: argparse._ActionsContainer) -> None:
         "--substrate",
         default="oc",
         choices=SUBSTRATES,
-        help="task-executor substrate: oc (opencode) | cx (codex)",
+        help=f"task-executor substrate: {', '.join(SUBSTRATES)}",
+    )
+    p.add_argument(
+        "--local-tasks",
+        type=Path,
+        default=None,
+        help="local bench only: task root (default: $HARNESS2_LOCAL_TASKS)",
     )
 
 

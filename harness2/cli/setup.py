@@ -21,22 +21,34 @@ import shutil
 import subprocess
 
 from harness2 import config, install
+from harness2.substrate import registry
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("benchmark", choices=("jb", "lab", "wb"))
+    p.add_argument("benchmark", choices=("jb", "lab", "wb", "local"))
     p.add_argument(
         "--subset",
         choices=("office", "web", "code"),
         default=None,
         help="wb only: one subset to install; omitted installs office, web, and code",
     )
-    p.add_argument("--substrate", choices=("oc", "cx"), default="oc")
+    p.add_argument("--substrate", choices=registry.choices(), default="oc")
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args(argv)
     if args.subset and args.benchmark != "wb":
         p.error("--subset only applies to wb")
+    if args.benchmark != "local" and args.substrate not in ("oc", "cx"):
+        p.error(
+            "setup installs the oc/cx executables only; DSH and Hermes are installed by their "
+            "own tooling (see docs/SUBSTRATES.md)"
+        )
+    if args.benchmark == "local":
+        print(
+            "The local benchmark needs no installation: point --local-tasks at a directory "
+            "with base/ and tasks/<domain>/<task>/task.md (docs/SUBSTRATES.md)."
+        )
+        return 0
     dry = args.dry_run
     missing = install.missing_runners()
     if missing and not dry:
