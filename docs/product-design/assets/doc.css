@@ -1,0 +1,166 @@
+/* ============================================================
+   Harness² · 产品设计文档样式（在 base.css 之后加载）
+   设计令牌全部继承 assets/base.css（工业暗色控制台），本文件只补
+   文档特有的版式：内嵌原型、KPI、ER 图、流程图链、代码块。
+   ============================================================ */
+
+/* ---------- 文档壳 ---------- */
+body.doc-body-page { background: var(--bg-app); }
+.doc-main { padding-bottom: calc(var(--s10) * 2); }
+
+/* ---------- 内嵌原型 ---------- */
+.proto iframe {
+  width: 100%;
+  height: 780px;
+  border: 0;
+  display: block;
+  background: var(--bg-app);
+}
+.proto.tall iframe { height: 860px; }
+.proto.short iframe { height: 620px; }
+.proto .proto-bar .open {
+  margin-left: 0;
+  margin-right: var(--s2);
+  font-size: 10.5px;
+  color: var(--text-secondary);
+}
+.proto .proto-bar .open:hover { color: var(--blue); }
+
+/* ---------- KPI ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); margin: var(--s3) 0 var(--s4); }
+.kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s3) var(--s4); }
+.kpi .k { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+.kpi .v { font-family: var(--font-mono); font-size: 21px; font-weight: 700; line-height: 1.2; margin-top: 2px; }
+.kpi .s { font-size: 11px; color: var(--text-muted); }
+.kpi.good .v { color: var(--green); }
+.kpi.warn .v { color: var(--orange); }
+.kpi.bad .v { color: var(--red); }
+.kpi.blue .v { color: var(--blue); }
+
+/* ---------- 流程链（横向） ---------- */
+.chain { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--s2); margin: var(--s3) 0; }
+.chain .node {
+  flex: 1 1 150px;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--s2) var(--s3);
+  font-size: 12px;
+}
+.chain .node b { display: block; font-size: 12px; margin-bottom: 2px; }
+.chain .node .tiny { display: block; }
+.chain .node.hot { border-color: var(--blue-border); background: var(--blue-bg); }
+.chain .node.good { border-color: rgba(92,184,120,.3); background: var(--green-bg); }
+.chain .node.bad { border-color: rgba(224,85,85,.3); background: var(--red-bg); }
+.chain .arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+/* ---------- 分支流 ---------- */
+.branch { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin: var(--s2) 0 var(--s4); }
+@media (max-width: 900px) { .branch { grid-template-columns: 1fr; } }
+.branch .side { border: 1px dashed var(--border-strong); border-radius: var(--r-md); padding: var(--s3); }
+.branch .side.ok { border-color: rgba(92,184,120,.35); }
+.branch .side.err { border-color: rgba(224,85,85,.35); }
+.branch .side h6 { margin: 0 0 6px; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; }
+.branch .side.ok h6 { color: var(--green); }
+.branch .side.err h6 { color: var(--red); }
+
+/* ---------- 代码块 ---------- */
+.code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s3) var(--s4);
+  overflow-x: auto;
+  white-space: pre;
+  margin: var(--s3) 0 var(--s4);
+}
+.code b { color: var(--text); font-weight: 600; }
+.code .c { color: var(--text-muted); }
+.code .g { color: var(--green); }
+.code .r { color: var(--red); }
+.code .o { color: var(--orange); }
+.code .b { color: var(--blue); }
+
+/* ---------- ER 图 ---------- */
+.er-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  gap: var(--s3);
+  margin: var(--s3) 0;
+}
+.er-ent {
+  background: var(--bg-app);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.er-ent .hd {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: 7px var(--s3);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.er-ent .hd b { font-family: var(--font-mono); font-size: 12px; color: var(--blue); }
+.er-ent .hd .cn { font-size: 11.5px; color: var(--text-secondary); }
+.er-ent .hd .tag { margin-left: auto; }
+.er-ent ul { margin: 0; padding: 7px var(--s3) 9px; list-style: none; }
+.er-ent li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--border);
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.er-ent li:last-child { border-bottom: 0; }
+.er-ent li .pk { color: var(--orange); font-size: 9.5px; letter-spacing: .04em; }
+.er-ent li .fk { color: var(--purple); font-size: 9.5px; letter-spacing: .04em; }
+.er-ent li .ty { color: var(--text-muted); font-size: 10px; margin-left: auto; }
+.er-ent .rel {
+  padding: 5px var(--s3) 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+.er-ent .rel b { color: var(--text-secondary); font-family: var(--font-mono); font-size: 10.5px; }
+
+/* ---------- 小工具 ---------- */
+.tag { display: inline-flex; align-items: center; height: 17px; padding: 0 6px; border-radius: 4px; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; border: 1px solid var(--border-strong); color: var(--text-muted); }
+.tag.shipped { color: var(--green); border-color: rgba(92,184,120,.35); background: var(--green-bg); }
+.tag.partial { color: var(--orange); border-color: rgba(232,164,80,.35); background: var(--orange-bg); }
+.tag.gap { color: var(--red); border-color: rgba(224,85,85,.35); background: var(--red-bg); }
+.tag.plan { color: var(--blue); border-color: var(--blue-border); background: var(--blue-bg); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+@media (max-width: 980px) { .two-col { grid-template-columns: 1fr; } }
+
+.mini-mono { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.hr { height: 1px; background: var(--border); margin: var(--s5) 0; border: 0; }
+
+/* ---------- 文档页脚 ---------- */
+.doc-foot { border-top: 1px solid var(--border); margin-top: var(--s10); padding: var(--s5) 0 var(--s8); font-size: 11.5px; color: var(--text-muted); }
+.doc-foot b { color: var(--text-secondary); }
+
+/* ---------- 打印 ---------- */
+@media print {
+  .doc-nav, .doc-top .tools { display: none; }
+  .doc-shell { grid-template-columns: 1fr; }
+  .proto iframe { height: 520px; }
+  .doc-sec { page-break-inside: auto; }
+  .callout, .layer, .kpi { break-inside: avoid; }
+}

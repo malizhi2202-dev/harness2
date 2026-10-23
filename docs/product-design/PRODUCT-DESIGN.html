@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness² · 产品设计文档与界面原型</title>
+<meta name="description" content="Harness²（Recursive Agent Harnessing for an Open World）的产品设计文档：定位、概念、架构、模块图、数据模型 ER、核心时序、难点与方案、全界面原型（演示数据）。">
+<link rel="stylesheet" href="prototype/assets/base.css">
+<link rel="stylesheet" href="assets/doc.css">
+<script src="prototype/assets/sprite.js" defer></script>
+</head>
+<body class="doc-body-page">
+
+<header class="doc-top">
+  <div class="doc-brand">
+    <span class="mark"><svg class="icon" style="width:13px;height:13px"><use href="#i-net"/></svg></span>
+    Harness²
+  </div>
+  <span class="sep">/</span>
+  <h1>产品设计文档 &amp; 界面原型</h1>
+  <div class="tools">
+    <span class="chip mono">v1 · 2026-10-23</span>
+    <a class="btn sm" href="#s0">怎么读</a>
+    <a class="btn sm" href="prototype/workbench.html" target="_blank">打开原型 ↗</a>
+    <a class="btn sm" href="../../README.md">仓库 README</a>
+  </div>
+</header>
+
+<div class="doc-shell">
+  <nav class="doc-nav" aria-label="文档目录">
+    <p class="grp">导言</p>
+    <a href="#s0">0 · 这份文档怎么读</a>
+    <p class="grp">产品</p>
+    <a href="#s1">1 · 产品全景</a>
+    <a href="#s1-3">1.3 能力地图</a>
+    <a href="#s1-4">1.4 不做什么</a>
+    <a href="#s1-5">1.5 坐标系</a>
+    <a href="#s1-6">1.6 路线图</a>
+    <p class="grp">核心概念</p>
+    <a href="#s2-1">2.1 Harness 与 c1–c8</a>
+    <a href="#s2-2">2.2 两级递归</a>
+    <a href="#s2-3">2.3 Propose–Probe–Compose</a>
+    <a href="#s2-4">2.4 可编辑面与编辑契约</a>
+    <a href="#s2-5">2.5 证据协议</a>
+    <a href="#s2-6">2.6 盲选与采纳</a>
+    <a href="#s2-7">2.7 经验库</a>
+    <a href="#s2-8">2.8 预算与账本</a>
+    <a href="#s2-9">2.9 两种递归模式</a>
+    <a href="#s2-10">2.10 执行器与通道</a>
+    <p class="grp">架构</p>
+    <a href="#s3">3 · 系统架构</a>
+    <a href="#s3-1">3.1 部署拓扑</a>
+    <a href="#s3-2">3.2 模块架构图</a>
+    <a href="#s3-3">3.3 技术方案</a>
+    <a href="#s3-4">3.4 组件职责</a>
+    <a href="#s3-5">3.5 接口一览</a>
+    <a href="#s3-6">3.6 数据模型</a>
+    <a href="#s3-7">3.7 ER 图</a>
+    <p class="grp">时序与流程</p>
+    <a href="#s4">4 · 核心时序</a>
+    <a href="#s4-1">4.1 一次任务（agg）</a>
+    <a href="#s4-2">4.2 单 stage 细节</a>
+    <a href="#s4-3">4.3 合成与盲选</a>
+    <a href="#s4-4">4.4 反思与入库</a>
+    <a href="#s4-5">4.5 串行 k 轮</a>
+    <a href="#s4-6">4.6 缓存、续跑与失败</a>
+    <p class="grp">指南</p>
+    <a href="#s5-1">5.1 安装与自检</a>
+    <a href="#s5-2">5.2 跑一个基准</a>
+    <a href="#s5-3">5.3 参数速查</a>
+    <a href="#s5-4">5.4 结果与续跑</a>
+    <a href="#s5-5">5.5 成本与复现纪律</a>
+    <p class="grp">原型</p>
+    <a href="#p0">6.0 全局交互纪律</a>
+    <a href="#p1">6.1 总览</a>
+    <a href="#p2">6.2 任务运行</a>
+    <a href="#p3">6.3 流水线</a>
+    <a href="#p4">6.4 证据浏览器</a>
+    <a href="#p5">6.5 经验库</a>
+    <a href="#p6">6.6 预算账本</a>
+    <a href="#p7">6.7 结果报告</a>
+    <p class="grp">难题</p>
+    <a href="#s7">7 · 难题与解决方案</a>
+    <a href="#s7-1">7.1 没有标准答案</a>
+    <a href="#s7-2">7.2 单任务过拟合</a>
+    <a href="#s7-3">7.3 通用性</a>
+    <a href="#s7-4">7.4 有效性</a>
+    <a href="#s7-5">7.5 修改膨胀</a>
+    <a href="#s7-6">7.6 学习信号</a>
+    <a href="#s7-7">7.7 越权与加代码</a>
+    <a href="#s7-8">7.8 泄漏与自偏好</a>
+    <a href="#s7-9">7.9 成本与复现</a>
+    <a href="#s7-10">7.10 安全与沙箱</a>
+    <p class="grp">附录</p>
+    <a href="#s8">8 · 术语表</a>
+    <a href="#s9">9 · 常见问题</a>
+  </nav>
+
+  <main class="doc-main">
+
+  <!-- ══════════════════ 0 ══════════════════ -->
+  <section class="doc-sec" id="s0">
+    <h2 class="sec"><span class="num">0</span>这份文档怎么读</h2>
+    <p class="q">本章回答：不同角色该看哪几章，文档里的数字与代码、与演示数据分别是什么关系。</p>
+
+    <p class="lead">这是 <b>Harness²</b> 的<strong>产品全景说明 + 全界面原型</strong>：一份可离线打开的 HTML（唯一外部依赖是本目录下的 CSS/JS），外加一套可单独打开的控制台原型页。它同时服务两类读者——人（对齐产品形态、机制边界与交付形态）和 AI（作为后续需求/实现的上游输入）。</p>
+
+    <table class="tbl">
+      <thead><tr><th>你是谁</th><th>先读</th><th>为什么</th></tr></thead>
+      <tbody>
+        <tr><td><b>产品 / 决策</b></td><td>§1 → §7 → §9</td><td>先知道它是什么、不做什么，再看它面对哪些硬难题、边界在哪</td></tr>
+        <tr><td><b>工程 / 架构</b></td><td>§2 → §3 → §4</td><td>概念定名之后，模块、数据模型与时序才可指认</td></tr>
+        <tr><td><b>设计 / 前端</b></td><td>§1.3 → §6 → §7.5</td><td>原型是形态基线；膨胀控制决定界面该暴露什么</td></tr>
+        <tr><td><b>评测 / 研究</b></td><td>§2.3 → §2.7 → §7.2–7.6 → §5.5</td><td>有效性、通用性与学习信号的口径都在这里</td></tr>
+        <tr><td><b>安全 / 合规</b></td><td>§7.7 → §7.8 → §7.10 → §3.4</td><td>可编辑面 = 可执行面；泄漏与沙箱的缺口必须明读</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <p><b>与代码的关系：</b>本版数字来自对 <span class="mono">/home/malizhi/ai/harness2</span> 的实测扫描（2026-10-23）：Python <b>43</b> 个模块 / <b>14,142</b> 行（core 14 / 5,840；substrate 7 / 1,911；benchmarks 8 / 4,418；cli 9 / 1,111），<b>7</b> 个 CLI 入口，<b>2</b> 个测试文件（605 行），<b>4</b> 个基准适配器（含 local），<b>8</b> 个可编辑组件。凡属推测或尚未实现的内容，一律显式标注 <span class="tag plan">规划</span> 或 <span class="tag gap">缺口</span>。</p>
+    </div>
+    <div class="callout warn">
+      <p><b>与 §6 原型的关系：</b>§6 是<strong>形态对齐</strong>，不是可用系统，也不是像素级设计交付。所有列表、指标、日志均为演示数据，每页顶部与浏览器框右上角都有「演示数据」标记。原型页在 <span class="mono">docs/product-design/prototype/</span>，也可脱离本文档单独打开。</p>
+    </div>
+    <div class="callout bad">
+      <p><b>定位声明：</b>Harness² 是 Google 开源的研究框架（Apache-2.0），README 明确「不是官方支持的 Google 产品」。本文档把它<strong>产品化地讲清楚</strong>，不等于它已经具备产品级的隔离、审计与 SLA；所有「产品」措辞都指<strong>形态</strong>而非承诺。</p>
+    </div>
+
+    <div class="chain">
+      <div class="node"><b>想快速判断值不值得看</b><span class="tiny muted">→ §1.1 一句话定位 + §1.4 不做什么</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>想知道它怎么运转</b><span class="tiny muted">→ §2 概念 + §4 时序</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>想评估可靠性</b><span class="tiny muted">→ §7 难题（每条都写了残留缺口）</span></div>
+      <span class="arrow">→</span>
+      <div class="node hot"><b>想动手</b><span class="tiny muted">→ §5 指南 + prototype/ 原型</span></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 1 ══════════════════ -->
+  <section class="doc-sec" id="s1">
+    <h2 class="sec"><span class="num">1</span>产品全景</h2>
+    <p class="q">本章回答：Harness² 是什么、给谁用、能干什么、明确不做什么，以及它在同类工作中的位置。</p>
+
+    <h3 id="s1-1">1.1 一句话定位</h3>
+    <p class="lead"><strong>Harness² 把 RSI（递归自我改进）从「改模型权重」挪到「改模型外面的那层系统」，并在没有标准答案的专业任务上把它跑成可复现的实验。</strong>权重冻结；被优化的是 harness——系统提示词、护栏、记忆、工具说明、子代理、技能、脚本、插件；递归发生在任务级与 harnessing 级两层。</p>
+
+    <div class="kpis">
+      <div class="kpi blue"><div class="k">可编辑组件</div><div class="v">8</div><div class="s">c1–c8 × 四种执行器</div></div>
+      <div class="kpi"><div class="k">递归层级</div><div class="v">2</div><div class="s">任务级 + 经验级</div></div>
+      <div class="kpi good"><div class="k">每任务预算</div><div class="v">4k / 3k</div><div class="s">rollout / 编辑会话</div></div>
+      <div class="kpi"><div class="k">基准</div><div class="v">3</div><div class="s">LAB · JobBench · WorkBuddy</div></div>
+      <div class="kpi warn"><div class="k">权重更新</div><div class="v">0</div><div class="s">模型完全不变</div></div>
+    </div>
+
+    <div class="diagram">
+      <div class="grid" style="gap:var(--s2)">
+        <div class="layer brand"><h5>任务流 · 一次一个任务（同领域串行，跨领域并行）</h5>
+          <div class="row"><span class="pill">task.md</span><span class="pill">source/</span><span class="pill">base harness</span><span class="pill">同领域 library</span></div></div>
+        <div class="arrow-v">↓ <small>任务级递归：在当前任务上做对照实验，产出一个任务级 harness</small></div>
+        <div class="layer"><h5>Propose → Probe → Compose（第 2 章）</h5>
+          <div class="row"><span class="pill">k×INV</span><span class="pill">k×DOM</span><span class="pill">每候选 1 次 rollout</span><span class="pill">k 个终版</span><span class="pill">盲选 1 个</span></div></div>
+        <div class="arrow-v">↓ <small>采纳之后才反思：用完整轨迹 diff 出「哪条改动有效」</small></div>
+        <div class="layer brand"><h5>经验级递归：cue / lesson / evidence / confidence → 领域库（第 2.7 节）</h5>
+          <div class="row"><span class="pill">完整被采纳树</span><span class="pill">EXPERIENCE.md</span><span class="pill">INDEX.md</span><span class="pill">下一个任务只读</span></div></div>
+      </div>
+    </div>
+
+    <h3 id="s1-2">1.2 目标用户与典型场景</h3>
+    <table class="tbl">
+      <thead><tr><th>用户</th><th>他要回答的问题</th><th>Harness² 给什么</th></tr></thead>
+      <tbody>
+        <tr><td><b>模型 / 评测团队</b></td><td>换一个新模型，在专业任务上是模型不行，还是外挂不行？</td><td>固定权重、只动 harness 的消融；base 与 refined 的同任务对照；同一套基准上的可比读数</td></tr>
+        <tr><td><b>Agent 平台团队</b></td><td>我们的 harness 能不能自动调？调完怎么证明没变差？</td><td>可复用的八组件编辑面 + 校验器 + 盲选 + 预算恒等式；library 作为团队经验沉淀</td></tr>
+        <tr><td><b>研究者</b></td><td>无真值条件下的自我改进，信号从哪来？会不会越改越歪？</td><td>answer-free 的证据协议；confounded 判定；两种递归模式；可复现的 run 目录</td></tr>
+        <tr><td><b>安全 / 合规</b></td><td>它到底能改什么、能执行什么、会不会碰评测？</td><td>路径白名单 + 保留脚本 + grader 绊线 + 判分后置；§7.7 / §7.10 的缺口清单</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s1-3">1.3 能力地图</h3>
+    <table class="tbl">
+      <thead><tr><th>能力</th><th>状态</th><th>入口 / 证据</th></tr></thead>
+      <tbody>
+        <tr><td>两种任务级递归：并行（宽）/ 串行（深）</td><td><span class="tag shipped">已实现</span></td><td class="mono">--mode parallel|sequential</td></tr>
+        <tr><td>八组件可编辑面（每个执行器一套映射）</td><td><span class="tag shipped">已实现</span></td><td class="mono">core/tree.py · substrate/{opencode,codex,manifest}.py</td></tr>
+        <tr><td>三个基准适配器（LAB / JobBench / WorkBuddy）</td><td><span class="tag shipped">已实现</span></td><td class="mono">harness2/benchmarks/</td></tr>
+        <tr><td>无凭证本地 demo（确定性编辑者 + 真 Python 执行）</td><td><span class="tag shipped">已实现</span></td><td class="mono">harness2-demo</td></tr>
+        <tr><td>盲选、反思、领域经验库</td><td><span class="tag shipped">已实现</span></td><td class="mono">core/selection.py · core/library.py</td></tr>
+        <tr><td>预算恒等式 + 指纹缓存 + 审计留档</td><td><span class="tag shipped">已实现</span></td><td class="mono">core/ledger.py · core/proposer.py</td></tr>
+        <tr><td>判分与报告（判分后置、未评分≠0）</td><td><span class="tag shipped">已实现</span></td><td class="mono">core/judge.py · cli/judge.py</td></tr>
+        <tr><td>断点续跑（summary + 产物指纹 + harness 指纹）</td><td><span class="tag shipped">已实现</span></td><td class="mono">core/schedule.py::_resume</td></tr>
+        <tr><td>DSH / Hermes 执行器（声明式 manifest）</td><td><span class="tag shipped">已实现</span></td><td class="mono">substrate/manifests/{dsh,hermes}.json</td></tr>
+        <tr><td>任意框架接入（自带 manifest + local 基准）</td><td><span class="tag shipped">已实现</span></td><td class="mono">docs/SUBSTRATES.md · --bench local</td></tr>
+        <tr><td>DSH/Hermes 跑三个专业基准的原生 launcher</td><td><span class="tag gap">缺口</span></td><td>§7.10 · 当前走 local 基准</td></tr>
+        <tr><td>候选重复采样（n&gt;1 确认同一改动）</td><td><span class="tag gap">缺口</span></td><td>§7.4 · 当前每候选 1 次 rollout</td></tr>
+        <tr><td>组件体积/数量上限（脚本、技能正文、库）</td><td><span class="tag gap">缺口</span></td><td>§7.5 · 仅 always-on 有硬上限</td></tr>
+        <tr><td>环内留出集验证</td><td><span class="tag gap">缺口</span></td><td>§7.3 · 通用性只在评测时测量</td></tr>
+        <tr><td>执行网络隔离 / 沙箱</td><td><span class="tag gap">缺口</span></td><td>§7.10 · Codex 关闭沙箱、网络不限</td></tr>
+        <tr><td>多租户、Web UI、权限</td><td><span class="tag plan">规划</span></td><td>本文档 §6 原型是形态提案，非已实现</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s1-4">1.4 这个产品不做什么</h3>
+    <table class="tbl">
+      <thead><tr><th>不做</th><th>为什么（这是设计决定，不是待办）</th></tr></thead>
+      <tbody>
+        <tr><td>不训练 / 不微调 / 不改权重</td><td>RSI 的载体是 harness，不是参数；权重冻结让「收益归因于外挂」成立</td></tr>
+        <tr><td>不改 Codex / OpenCode 本体</td><td>执行器是 substrate；改动只发生在它暴露的可编辑面（AGENTS.md / skills / hooks 等）</td></tr>
+        <tr><td>不内置 rubric / 答案</td><td>answer-free 是核心假设：真实工作里没人给你打分；引入 rubric 就等于把它变成刷题机</td></tr>
+        <tr><td>不做在线服务 / 多租户</td><td>当前形态是批处理 CLI + 文件系统；并发只是进程内线程池</td></tr>
+        <tr><td>不保证「通用 harness」</td><td>任务级 harness 允许写死本任务事实；通用性只承诺在「过程」层</td></tr>
+        <tr><td>不提供安全沙箱</td><td>这是当前实现的缺口，不是卖点；§7.10 给出加固路径</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s1-5">1.5 坐标系：同类工作在做什么</h3>
+    <p class="lead">三类相邻工作，差别不在「是否自我改进」，而在<strong>改什么、用什么信号、是否要求真值、是否持久化</strong>。下表是本文档作者的理解，<b>不是</b>对原文的引用。</p>
+    <table class="tbl">
+      <thead><tr><th>谱系</th><th>改什么</th><th>信号</th><th>要真值？</th><th>持久化</th></tr></thead>
+      <tbody>
+        <tr><td><b>权重层 RSI</b>（自训练、自博弈、DGM 式自改代码）</td><td>参数或程序本身</td><td>验证器 / 测试 / 环境奖励</td><td>要</td><td>权重或程序快照</td></tr>
+        <tr><td><b>Harness 优化</b>（提示词/流程搜索类工作）</td><td>提示词、少量流程</td><td>任务分数或偏好模型</td><td>要（或代理指标）</td><td>提示词集合</td></tr>
+        <tr><td><b>评测 harness</b>（跑分框架）</td><td>不改，只测量</td><td>基准分数</td><td>要</td><td>运行日志</td></tr>
+        <tr><td><b>Harness²</b></td><td>八组件整棵树</td><td><b>同任务上的行为对照 + 证据追溯</b></td><td><b>不要</b></td><td>任务级树 + 领域经验库</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <p><b>关于「第一个」</b>：仓库 README 只写 <span class="mono">recursive agent harnessing</span>，没有「first RSI」字样；「Harness 层的 RSI」「第一个」是论文/媒体口径。同期还有 Video-RSI、PluginRSI、metaRSI 等工作都打 RSI + harness 旗号——<b>「第一个」当营销看，机制才值得读</b>。</p>
+    </div>
+
+    <h3 id="s1-6">1.6 改进方向与路线图</h3>
+    <div class="grid g3">
+      <div class="layer"><h5>现在（v1，已发布）</h5>
+        <div class="row"><span class="pill">两模式</span><span class="pill">八组件</span><span class="pill">三基准</span><span class="pill">盲选+反思</span><span class="pill">预算断言</span></div>
+        <p class="tiny dim" style="margin:8px 0 0">目标：把「无真值 RSI 可行」证明成可复现实验。</p></div>
+      <div class="layer"><h5>下一步（补三处最薄）</h5>
+        <div class="row"><span class="pill">候选 n=2 确认</span><span class="pill">组件体积上限</span><span class="pill">环内留出验证</span></div>
+        <p class="tiny dim" style="margin:8px 0 0">见 §7.4 / §7.5 / §7.3，每节都给了最小改法。</p></div>
+      <div class="layer"><h5>之后（产品化）</h5>
+        <div class="row"><span class="pill">执行隔离</span><span class="pill">状态库</span><span class="pill">多租户 UI</span><span class="pill">策略审查</span></div>
+        <p class="tiny dim" style="margin:8px 0 0">原型的形态基线即 §6；落地前必须先解决 §7.7 / §7.8 / §7.10。</p></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 2 ══════════════════ -->
+  <section class="doc-sec" id="s2">
+    <h2 class="sec"><span class="num">2</span>核心概念</h2>
+    <p class="q">本章回答：八个组件是什么、两层递归如何咬合、证据如何进入模型、预算为什么是 4k/3k。</p>
+
+    <h3 id="s2-1">2.1 Harness 与 c1–c8</h3>
+    <p class="lead">harness = 模型之外让它成为 agent 的那层系统。<b>Harness² 只把这一层当作优化对象</b>，并把它的可编辑部分切成 8 个组件（代码里叫 c1..c8，实际是两个 <span class="mono">SurfaceSpec</span> 的值）。</p>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>组件</th><th>OpenCode 路径</th><th>Codex 路径</th><th>何时进上下文</th></tr></thead>
+      <tbody>
+        <tr><td>c1</td><td>系统提示词</td><td class="mono">systemprompt.md</td><td class="mono">AGENTS.md</td><td>常驻</td></tr>
+        <tr><td>c2</td><td>护栏</td><td class="mono">guardrails.md</td><td class="mono">AGENTS.md</td><td>常驻</td></tr>
+        <tr><td>c3</td><td>记忆</td><td class="mono">LongTermMEMORY.md</td><td class="mono">AGENTS.md</td><td>常驻</td></tr>
+        <tr><td>c4</td><td>工具说明</td><td class="mono">tool_descriptions/tool_guidance.md</td><td class="mono">AGENTS.md</td><td>常驻</td></tr>
+        <tr><td>c5</td><td>子代理</td><td class="mono">sub_agents/&lt;name&gt;/AGENT.md</td><td class="mono">sub_agents/&lt;name&gt;/AGENT.md</td><td>独立上下文</td></tr>
+        <tr><td>c6</td><td>技能</td><td class="mono">skills/&lt;name&gt;/SKILL.md</td><td class="mono">.agents/skills/&lt;name&gt;/SKILL.md</td><td>按需加载</td></tr>
+        <tr><td>c7</td><td>脚本</td><td class="mono">scripts/*.py</td><td class="mono">scripts/*.py</td><td>按需执行</td></tr>
+        <tr><td>c8</td><td>插件 / hooks</td><td class="mono">plugin/*.ts</td><td class="mono">.codex/hooks.json</td><td>工具循环内</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><b>常驻预算是最硬的约束</b>：OpenCode 四个常驻文件合计 ≤ 24,000 字符；Codex 只有 AGENTS.md，≤ 8,000 字符（Codex 自身还会在 32,768 字节处静默截断）。超限 → 校验失败。这就是为什么提示词反复强调「加一条常驻，就删一条」。</p>
+      <p style="margin-top:6px"><b>c2–c4 在 Codex 上不是四个文件</b>：Codex 的常驻面只有 AGENTS.md，护栏/记忆/工具说明是<b>同一文件里的不同职责段落</b>；表里并列是为了概念对齐，不是路径对齐。</p>
+    </div>
+
+    <h3 id="s2-2">2.2 两级递归</h3>
+    <div class="two-col">
+      <div>
+        <p><b>任务级递归（内层）</b>：在<em>当前任务</em>上做对照实验。基线 k 次 → 提案 2k 个 → 每个候选 probe 1 次 → 合成 k 个终版 → 盲选 1 个。</p>
+        <p class="small" style="color:var(--text-secondary)">它回答：「这个任务上，改哪里能让行为变好？」</p>
+      </div>
+      <div>
+        <p><b>Harnessing 级递归（外层）</b>：任务结束后，用<em>完整记录</em>（所有候选的树、轨迹、产物、决策笔记）diff 出「哪条改动起了作用」，写成一条可迁移经验，存进该领域的库。</p>
+        <p class="small" style="color:var(--text-secondary)">它回答：「下次遇到同类任务，应该先想到什么？」</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <div class="chain">
+        <div class="node"><b>任务 t</b><span class="tiny muted">base harness + 同领域库</span></div>
+        <span class="arrow">→</span>
+        <div class="node hot"><b>内层：Propose–Probe–Compose</b><span class="tiny muted">产出被采纳的树</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><b>盲选</b><span class="tiny muted">只看产物</span></div>
+        <span class="arrow">→</span>
+        <div class="node good"><b>外层：反思</b><span class="tiny muted">edits 表 + 一条 lesson</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><b>任务 t+1</b><span class="tiny muted">仍从 base 起步</span></div>
+      </div>
+      <p class="tiny dim" style="margin:0">注意最后一步：<b>下一个任务不会继承上一个任务改好的树</b>（代码里写死从 <span class="mono">adapter.base_harness()</span> 读取）。继承的只有库里的经验文本。这是整套设计里最重要的一条反污染约束。</p>
+    </div>
+
+    <h3 id="s2-3">2.3 Propose–Probe–Compose</h3>
+    <div class="chain">
+      <div class="node"><b>① Propose</b><span class="tiny muted">k 个 INV + k 个 DOM，各自独立采样</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>② Probe</b><span class="tiny muted">每个候选在同一任务上真跑 1 次</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>③ Compose</b><span class="tiny muted">k 个合成器看全量证据，各产出一个终版</span></div>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>维度</th><th>管什么</th><th>典型改动</th></tr></thead>
+      <tbody>
+        <tr><td><b>INV</b>（不变式）</td><td>agent 怎么工作，跨任务都该成立</td><td>流程顺序、校验、停止条件、工具使用纪律</td></tr>
+        <tr><td><b>DOM</b>（领域）</td><td>从业者才知道的东西</td><td>法域时限、财务口径、交付件格式约束</td></tr>
+        <tr><td><b>AGG / COMPOSE</b></td><td>合并与取舍</td><td>merge、整体采纳、<span class="mono">KEEP_BASE</span>、还原更早的 checkpoint</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <p><b>三条硬约束</b>：① 每处改动必须能追溯到轨迹里的一个具体瞬间；② 每条候选只有 1 次 rollout，单次结果只能算弱证据；③ 关联的 rollout 什么都没产出时，该改动被判 UNSAFE，除非其余证据压倒性。</p>
+    </div>
+
+    <h3 id="s2-4">2.4 可编辑面与编辑契约</h3>
+    <p>提案不改整棵树：<b>没写的文件就是继承</b>（omitted-is-inherited）。可写路径由正则白名单决定，越界文件不是被静默丢弃，而是<strong>整棵提案作废</strong>并反馈给模型重试一次。</p>
+    <table class="tbl">
+      <thead><tr><th>路径模式</th><th>允许</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">systemprompt.md / guardrails.md / LongTermMEMORY.md / tool_descriptions/tool_guidance.md</td><td><span class="chip ok">是</span></td><td>常驻文本</td></tr>
+        <tr><td class="mono">skills|.agents/skills/&lt;name&gt;/SKILL.md</td><td><span class="chip ok">是</span></td><td>名字限 <span class="mono">[a-z0-9][a-z0-9_-]*</span></td></tr>
+        <tr><td class="mono">skills/&lt;name&gt;/scripts/*</td><td><span class="chip ok">是</span></td><td>技能自带助手；放错位置等于不存在</td></tr>
+        <tr><td class="mono">sub_agents/&lt;name&gt;/AGENT.md</td><td><span class="chip ok">是</span></td><td>部分基准/执行器关闭</td></tr>
+        <tr><td class="mono">scripts/*.py</td><td><span class="chip ok">是</span></td><td>保留名不可覆盖</td></tr>
+        <tr><td class="mono">plugin/&lt;name&gt;.ts · .codex/hooks.json</td><td><span class="chip ok">是</span></td><td>OpenCode plugin / Codex hooks</td></tr>
+        <tr><td class="mono">harness2/**、任务数据、评测器、其他任务的库</td><td><span class="chip bad">否</span></td><td>路径根本不在白名单里；写了 → 整棵拒绝</td></tr>
+      </tbody>
+    </table>
+    <div class="branch">
+      <div class="side ok"><h6>校验通过（在 rollout 之前）</h6>
+        <ul class="small" style="margin:0;padding-left:16px;line-height:1.9">
+          <li>常驻长度 ≤ 上限；Codex 的 AGENTS.md 不得为空</li>
+          <li>每个 skill 有 <span class="mono">description</span>、名字规则正确、且被 always-on 点名</li>
+          <li>子代理 frontmatter 合法；被禁时直接报错</li>
+          <li>Python 能编译；脚本引用都存在；保留脚本未被顶替</li>
+          <li>hooks 是合法 JSON、事件在白名单、类型必须是 command</li>
+          <li>benchmark 自己的 <span class="mono">validate_tree</span> 通过</li>
+          <li>树里没有 grader 标记（7 个 marker）</li>
+        </ul>
+      </div>
+      <div class="side err"><h6>任一条失败</h6>
+        <p class="small" style="margin:0 0 6px">不是丢弃单个文件，而是<strong>整棵提案不采纳</strong>；错误原文（可操作的话术）回灌给模型，重试 1 次（<span class="mono">STAGE_ATTEMPTS=2</span>）。</p>
+        <p class="small muted" style="margin:0">仍失败 → 回退到当前 harness，阶段记 <span class="mono">fell_back</span> 与 <span class="mono">error</span>。任务继续，不中断。</p>
+      </div>
+    </div>
+    <p class="tiny dim">另外还有 <span class="mono">autotrigger()</span>：新技能没在常驻文本里被点名时，自动补一行触发词（如果补完不超预算）。它修的是「技能被静默丢弃」这类最难查的错。</p>
+
+    <h3 id="s2-5">2.5 证据协议</h3>
+    <p class="lead">证据是<strong>磁盘上的文件</strong>，prompt 里只有一段指针（<span class="mono">MISSION.md</span>）。所以长轨迹不会被压成摘要，模型可以自己 grep/翻页。</p>
+    <table class="tbl">
+      <thead><tr><th>路径</th><th>内容</th><th>谁读</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">context/task.md</td><td>任务原文（已剥离评分标准与期望输出）</td><td>提案 / 选择 / 反思</td></tr>
+        <tr><td class="mono">context/source/</td><td>源材料，按 leak_globs 过滤答案键</td><td>提案 / 选择</td></tr>
+        <tr><td class="mono">context/rollouts/&lt;label&gt;.md</td><td>完整轨迹，统一 <span class="mono">[ACTION]/[OBSERVATION]/[ERROR]</span></td><td>提案 / 反思</td></tr>
+        <tr><td class="mono">context/deliverables/&lt;label&gt;/</td><td>产物，用判分器同款 extractor 渲染</td><td>提案 / 选择</td></tr>
+        <tr><td class="mono">context/harness/</td><td>正在编辑的树（提案的工作副本）</td><td>提案</td></tr>
+        <tr><td class="mono">context/library/</td><td>同领域历史：完整树 + EXPERIENCE.md</td><td>提案 / 反思</td></tr>
+        <tr><td class="mono">context/pool/&lt;label&gt;/</td><td>候选 harness + 它的 rollout + unified diff</td><td>合成器</td></tr>
+        <tr><td class="mono">context/decisions/</td><td>每个阶段的 &lt;notes&gt; 决策记录</td><td>合成器 / 反思</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad">
+      <p><b>三道路障</b>：① <span class="mono">leak_globs</span> 命中答案键路径 → 进上下文前抛错；② <span class="mono">GRADER_VERDICT_MARKERS</span> 七个标记（<span class="mono">pass_rate</span>、<span class="mono">passed_count</span>、<span class="mono">deterministic_eval_*</span> 等）出现在文件名或内容 → 抛错，并明确写着「这是泄漏，不是误报」；③ 产物必须能被判分器读出来，读不出来的产物不算漂亮。</p>
+    </div>
+
+    <h3 id="s2-6">2.6 盲选与采纳</h3>
+    <p>选择者只看<strong>产物</strong>：候选被匿名成 A/B/C…（按 task/mode/k 的 sha1 种子洗牌，可复现），看不到 harness、看不到 run、也看不到哪个是基线。</p>
+    <table class="tbl">
+      <thead><tr><th>规则</th><th>值</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>候选池</td><td>仅 finals</td><td>agg1..aggk 或 c1..ck；基线<b>不入池</b>，因此没有「不选」这个选项</td></tr>
+        <tr><td>k=1</td><td>trivial selection</td><td>只有一个终版 → 不开选择会话（省一次调用）</td></tr>
+        <tr><td>非交付物</td><td>先丢</td><td>没产物 / 渲染失败 / 空内容 → <span class="mono">dropped</span></td></tr>
+        <tr><td>选择失败</td><td>回退</td><td>finals-only 池里没有基线可退：退到排序第一个 final，并记 <span class="mono">fallback</span>（mixed 池才可能退基线）</td></tr>
+        <tr><td>判分</td><td>之后</td><td>选择提交后才判分；判分失败 = <span class="mono">unscored</span>，不当 0</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s2-7">2.7 经验库</h3>
+    <div class="code"><span class="c"># 目录即检索：跨领域物理隔离；按 benchmark × mode × k 再隔离</span>
+library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
+  INDEX.md                     <span class="c"># 每次 add 后从磁盘重建</span>
+  harnesses/&lt;task&gt;/harness/&lt;rel&gt;  <span class="c"># 完整被采纳树</span>
+  harnesses/&lt;task&gt;/EXPERIENCE.md  <span class="c"># why + edits 表 + 一条 lesson</span></div>
+    <table class="tbl">
+      <thead><tr><th>字段</th><th>要求</th><th>代码后果</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">cue</td><td>非空；描述「情境的形状」</td><td>三缺一 → 整条不入库</td></tr>
+        <tr><td class="mono">lesson</td><td>非空；对哪个组件做什么</td><td>同上</td></tr>
+        <tr><td class="mono">evidence</td><td>非空；依据哪几行</td><td>同上</td></tr>
+        <tr><td class="mono">confidence</td><td>可选</td><td>建议给，不进门槛</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><b>「库里有树」≠「下次套用」</b>：下一个任务仍从 base harness 起步；库只作为证据被读。要用某个组件，必须 copy 进 <span class="mono">context/harness/</span>，并<strong>重新验证它的 workspace 事实</strong>——上一个任务的映射/阈值在新任务里只是假设。</p>
+    </div>
+
+    <h3 id="s2-8">2.8 预算与账本</h3>
+    <table class="tbl">
+      <thead><tr><th>项</th><th>公式</th><th>k=2 时</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>rollout</td><td class="mono">R = 4k</td><td class="mono">8</td><td>k 基线 + 2k 候选 + k 终版</td></tr>
+        <tr><td>编辑会话</td><td class="mono">P = 3k</td><td class="mono">6</td><td>k×INV + k×DOM + k×合成</td></tr>
+        <tr><td>选择会话</td><td>k&gt;1 时 1 次</td><td class="mono">1</td><td>不计入 R/P</td></tr>
+        <tr><td>反思会话</td><td>采纳后 1 次</td><td class="mono">1</td><td>不计入 R/P</td></tr>
+      </tbody>
+    </table>
+    <p><span class="mono">ledger.assert_identity()</span> 对不上 4k/3k 就抛 <span class="mono">BudgetError</span>：这是<strong>断言</strong>，不是统计。重试单独记 attempts，缓存的调用记 <span class="mono">cached</span> 且花费为 0。</p>
+    <div class="diagram">
+      <div class="chain">
+        <div class="node"><b>指纹</b><span class="tiny muted">sha256(label, mission, system, 证据路径+字节)[:16]</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><b>命中</b><span class="tiny muted">直接返回 Reply(cached=True, usd=0)</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><b>未命中</b><span class="tiny muted">真跑；写审计五件套</span></div>
+      </div>
+    </div>
+
+    <h3 id="s2-9">2.9 两种递归模式</h3>
+    <table class="tbl">
+      <thead><tr><th></th><th>并行 <span class="mono">agg</span></th><th>串行 <span class="mono">seq</span></th></tr></thead>
+      <tbody>
+        <tr><td>形状</td><td>一次宽探：2k 个候选共享同一份基线证据</td><td>k 轮递进：每轮的编辑对象是上一轮 checkpoint</td></tr>
+        <tr><td>终版</td><td>k 个 <span class="mono">agg1..aggk</span>（互不可见）</td><td><span class="mono">c1..ck</span>，最后一轮是最终态</td></tr>
+        <tr><td>合成输入</td><td>全部 2k 候选 + 各自 rollout</td><td>本轮 2 个候选 + 之前所有轮次的历史</td></tr>
+        <tr><td>倾向</td><td>探索更宽，候选多样性更高</td><td>精修更深，可回退到更早 checkpoint</td></tr>
+        <tr><td>代价</td><td colspan="2">同任务预算相同（4k / 3k）；差别只在信息如何累积</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s2-10">2.10 执行器与通道</h3>
+    <table class="tbl">
+      <thead><tr><th>概念</th><th>取值</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td>substrate（执行器）</td><td class="mono">oc · cx · dsh · hermes</td><td>跑求解 rollout 的 agent 框架；决定可编辑面与安装方式。dsh/hermes 是 JSON manifest，其他框架照此扩展</td></tr>
+        <tr><td>通道 ChannelSpec</td><td class="mono">opencode · claude_cli</td><td>改进者/选择者/反思者的调用方式；与执行器独立</td></tr>
+        <tr><td>安装模式</td><td class="mono">workspace_agents_md · home_dir_jinja · workspace_config · codex_root</td><td>把树投递进执行器的通道，换一种就换基线</td></tr>
+        <tr><td>模型</td><td class="mono">HARNESS2_SOLVER_MODEL / _IMPROVER_MODEL</td><td>求解与改进可以是不同模型；opencode 需 provider 前缀</td></tr>
+      </tbody>
+    </table>
+
+    <p class="small" style="margin-top:var(--s4)"><b>四种执行器的组件映射</b>（同一套方法，不同的树）：</p>
+    <table class="tbl">
+      <thead><tr><th>组件</th><th>OpenCode</th><th>Codex</th><th>DSH</th><th>Hermes</th></tr></thead>
+      <tbody>
+        <tr><td>c1 提示词</td><td class="mono">systemprompt.md</td><td class="mono">AGENTS.md</td><td class="mono">AGENTS.md（$DSH_HOME）</td><td class="mono">AGENTS.md（cwd）</td></tr>
+        <tr><td>c2–c4 护栏/记忆/工具说明</td><td class="mono">guardrails.md · LongTermMEMORY.md · tool_descriptions/</td><td>并入 AGENTS.md</td><td>并入 AGENTS.md</td><td>并入 AGENTS.md</td></tr>
+        <tr><td>c5 子代理</td><td class="mono">sub_agents/&lt;n&gt;/AGENT.md</td><td class="mono">sub_agents/&lt;n&gt;/AGENT.md</td><td><span class="tag gap">无文件面</span></td><td><span class="tag gap">无文件面</span></td></tr>
+        <tr><td>c6 技能</td><td class="mono">skills/&lt;n&gt;/SKILL.md</td><td class="mono">.agents/skills/&lt;n&gt;/SKILL.md</td><td class="mono">skills/&lt;n&gt;/SKILL.md</td><td class="mono">skills/&lt;n&gt;/SKILL.md</td></tr>
+        <tr><td>c7 脚本</td><td class="mono">scripts/*.py</td><td class="mono">scripts/*.py</td><td class="mono">scripts/*.py</td><td class="mono">scripts/*.py</td></tr>
+        <tr><td>c8 插件 / hooks</td><td class="mono">plugin/*.ts</td><td class="mono">.codex/hooks.json</td><td><span class="tag gap">Cordis patch 行</span></td><td><span class="tag gap">Python 插件 / config hooks</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p>DSH / Hermes 的可编辑树走 <b>manifest 安装</b>（DSH 落 <span class="mono">$DSH_HOME</span>；Hermes 是 workspace + home 的 split 安装），并用 <span class="mono">--bench local</span> 执行；两者当前的轨迹是 CLI 的文本输出（工具级事件是后续升级）。细节见仓库 <span class="mono">docs/SUBSTRATES.md</span>。</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 3 ══════════════════ -->
+  <section class="doc-sec" id="s3">
+    <h2 class="sec"><span class="num">3</span>系统架构</h2>
+    <p class="q">本章回答：进程与子进程怎么摆、模块怎么分层、技术选型是什么、状态存在哪里、表与表怎么关联。</p>
+
+    <h3 id="s3-1">3.1 部署拓扑</h3>
+    <p class="lead">没有服务端、没有数据库：<b>一个 CLI 进程 + 三类子进程 + 一个文件系统</b>。所有状态是目录与 JSON，因此「部署」等于「装好依赖 + 给一个可写目录」。</p>
+    <div class="diagram">
+      <div class="grid" style="gap:var(--s2)">
+        <div class="layer brand">
+          <h5>① 操作者 / CI</h5>
+          <div class="row"><span class="pill">harness2</span><span class="pill">harness2-judge</span><span class="pill">harness2-report</span><span class="pill">harness2-setup / check / demo</span><span class="pill">环境变量 + .env</span></div>
+        </div>
+        <div class="arrow-v">↓ <small>argv / stdin · 退出码 · stdout 进度行</small></div>
+        <div class="layer brand">
+          <h5>② harness2 CLI 进程（单进程，标准库）</h5>
+          <div class="row"><span class="pill">suite: run_sweep</span><span class="pill">域级线程池 ×N</span><span class="pill">任务内 phase 池（提案 2 / rollout 2）</span><span class="pill">fcntl 锁写 summary</span><span class="pill">账本断言</span></div>
+          <div class="row" style="margin-top:4px"><span class="pill mono">core/recursion</span><span class="pill mono">core/context</span><span class="pill mono">core/selection</span><span class="pill mono">core/library</span><span class="pill mono">core/prompts</span></div>
+        </div>
+        <div class="arrow-v">↓ <small>subprocess：stdin 传 prompt；cwd = 临时工作区；harvest 只回传 context/harness</small></div>
+        <div class="grid g3" style="gap:var(--s2)">
+          <div class="layer">
+            <h5>③a 提案 / 选择 / 反思会话</h5>
+            <div class="row"><span class="pill">opencode（bun）</span><span class="pill">claude CLI</span><span class="pill">外部目录 deny</span><span class="pill">timeout / 重试</span></div>
+          </div>
+          <div class="layer">
+            <h5>③b 求解 rollout</h5>
+            <div class="row"><span class="pill">基准 launcher</span><span class="pill">opencode / codex exec</span><span class="pill">容器(WB)</span><span class="pill">逐 run_id 幂等</span></div>
+          </div>
+          <div class="layer">
+            <h5>③c 判分</h5>
+            <div class="row"><span class="pill">基准 judge</span><span class="pill">仅在采纳之后</span><span class="pill">失败=unscored</span></div>
+          </div>
+        </div>
+        <div class="arrow-v">↓ <small>文件读写（唯一的状态通道）</small></div>
+        <div class="grid g2" style="gap:var(--s2)">
+          <div class="layer">
+            <h5>④ 运行数据 <span class="mono tiny">runs/</span></h5>
+            <div class="row"><span class="pill mono">runs/&lt;ns&gt;/&lt;task&gt;/summary.json</span><span class="pill mono">harnesses/&lt;label&gt;/</span><span class="pill mono">context/&lt;label&gt;/</span><span class="pill mono">selection/</span><span class="pill mono">reflection/</span><span class="pill mono">executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/</span></div>
+          </div>
+          <div class="layer">
+            <h5>⑤ 经验与依赖</h5>
+            <div class="row"><span class="pill mono">library/&lt;bench&gt;/k&lt;k&gt;/&lt;mode&gt;/&lt;domain&gt;/</span><span class="pill mono">.audit/</span><span class="pill mono">dependencies/</span><span class="pill mono">third_party/</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <p><b>并发模型</b>：<span class="mono">--workers N</span> 只并行<strong>不同领域</strong>；同一领域内任务严格串行（保证库的顺序与可复现）。任务内部，2k 个候选的提案与 rollout 用线程池并发（<span class="mono">PHASE_WIDTH=2</span>），完成后再按固定顺序记账——并发不改变账本序列。</p>
+    </div>
+
+    <h3 id="s3-2">3.2 模块架构图</h3>
+    <div class="diagram">
+      <div class="layer brand"><h5>接入层 · cli/（9 文件 / 1,111 行）</h5>
+        <div class="row"><span class="pill mono">run_sweep</span><span class="pill mono">judge</span><span class="pill mono">report</span><span class="pill mono">setup</span><span class="pill mono">check</span><span class="pill mono">demo</span><span class="pill mono">bridge</span><span class="pill mono">_common</span></div>
+      </div>
+      <div class="arrow-v">↓ <small>解析参数、校验同参数一致性、构造 adapter / Proposer</small></div>
+      <div class="layer brand"><h5>方法层 · core/（14 文件 / 5,688 行）</h5>
+        <div class="row"><span class="pill mono">schedule</span><span class="pill mono">recursion</span><span class="pill mono">context</span><span class="pill mono">proposer</span><span class="pill mono">selection</span><span class="pill mono">library</span><span class="pill mono">prompts</span><span class="pill mono">tree</span><span class="pill mono">spec</span><span class="pill mono">ledger</span><span class="pill mono">judge</span><span class="pill mono">report</span><span class="pill mono">runmark</span></div>
+      </div>
+      <div class="arrow-v">↓ <small>只依赖 Protocol（Adapter / Substrate），不 import 任何 benchmark</small></div>
+      <div class="grid g2" style="gap:var(--s2)">
+        <div class="layer"><h5>执行器层 · substrate/（7 文件 / 1,911 行）</h5>
+          <div class="row"><span class="pill mono">base</span><span class="pill mono">opencode</span><span class="pill mono">codex</span><span class="pill mono">manifest</span><span class="pill mono">registry</span><span class="pill mono">host</span></div>
+          <p class="tiny dim" style="margin:6px 0 0">投影：路径 / 上限 / 校验 → <span class="mono">SurfaceSpec</span>；manifest 子层把 dsh/hermes/自定义框架变成数据</p>
+        </div>
+        <div class="layer"><h5>基准层 · benchmarks/（8 文件 / 4,418 行）</h5>
+          <div class="row"><span class="pill mono">jobbench</span><span class="pill mono">lab</span><span class="pill mono">workbuddy</span><span class="pill mono">local</span><span class="pill mono">tasks</span><span class="pill mono">jb_opencode_runner</span><span class="pill mono">wb_render</span></div>
+          <p class="tiny dim" style="margin:6px 0 0">实现 <span class="mono">BenchmarkAdapter</span>：任务流 / 执行 / 轨迹 / 产物 / 判分</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">core 内部调用关系（主干）</p>
+        <div class="code" style="margin-top:0">cli
+ └─ schedule.run_sweep
+     ├─ schedule.run_domain
+     │   ├─ library.retain / add
+     │   └─ schedule.run_task
+     │       ├─ schedule._resume ── runmark.fingerprint
+     │       ├─ recursion.run_mode
+     │       │   ├─ context.build ── tree.* / spec.RunView
+     │       │   ├─ proposer.call ── audit + cache
+     │       │   └─ selection_pool
+     │       ├─ selection.run_selection ── context.build
+     │       └─ selection.reflect_adoption ── library.add
+     └─ core.judge (仅按需)</div>
+      </div>
+      <div>
+        <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">三条不可逆的依赖方向</p>
+        <table class="tbl compact" style="margin:0">
+          <tbody>
+            <tr><td><b>core → 不知道具体基准</b></td><td class="tiny">只面向 <span class="mono">BenchSpec</span> / <span class="mono">Adapter</span></td></tr>
+            <tr><td><b>core → 不知道具体执行器</b></td><td class="tiny">只面向 <span class="mono">SurfaceSpec</span> + Protocol</td></tr>
+            <tr><td><b>证据 → 只从适配器来</b></td><td class="tiny">不扫目录猜产物；读路径由 adapter 声明</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny dim" style="margin:8px 0 0">这三条让「加一个基准」不必碰方法代码；也是 §7.8 泄漏防线能集中到一处的前提。</p>
+      </div>
+    </div>
+
+    <h3 id="s3-3">3.3 技术方案</h3>
+    <table class="tbl">
+      <thead><tr><th>关注点</th><th>选择</th><th>理由 / 代价</th></tr></thead>
+      <tbody>
+        <tr><td>语言 / 运行时</td><td class="mono">Python ≥3.12,&lt;3.14 · uv</td><td>零运行时依赖（<span class="mono">dependencies = []</span>）；安装即 venv + editable</td></tr>
+        <tr><td>编排</td><td>标准库 <span class="mono">ThreadPoolExecutor</span> + <span class="mono">subprocess</span></td><td>会话与 rollout 都是外部进程，GIL 不是瓶颈；不需要队列/服务</td></tr>
+        <tr><td>状态</td><td>文件系统 + JSON（无数据库）</td><td>可直接 diff / grep / 打包；代价是没有事务与跨 run 查询</td></tr>
+        <tr><td>并发写</td><td><span class="mono">fcntl.flock</span> + 原子 <span class="mono">os.replace</span></td><td>多个模式可分别写同一个 summary；读者永远看到完整 JSON</td></tr>
+        <tr><td>缓存 / 幂等</td><td>sha256 指纹（内容 + 路径）[:16]</td><td>同证据不重复计费；路径参与哈希，两模式 k=1 证据相同也不会互相命中</td></tr>
+        <tr><td>可复现</td><td>namespace + seed + 冻结 config</td><td>namespace 含 bench/substrate/mode/k/seed/tag；续跑校验失败就重跑而不是拼接</td></tr>
+        <tr><td>渲染</td><td>可选 extra <span class="mono">[render]</span>（openpyxl / python-pptx）</td><td>只有产物抽取需要；核心不依赖</td></tr>
+        <tr><td>桥接</td><td>可选 extra <span class="mono">[bridge]</span>（litellm / fastapi / google-auth）</td><td>仅给本地模型代理用；与主流程解耦</td></tr>
+        <tr><td>观测</td><td>stdout 进度行 + summary.json + 审计目录</td><td>无 tracing/metrics 后端；排障靠文件</td></tr>
+        <tr><td>安全边界</td><td>路径白名单、保留脚本、grader 绊线、外部目录 deny</td><td>是<b>内容与路径</b>边界，不是执行沙箱（§7.10）</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s3-4">3.4 组件职责</h3>
+    <table class="tbl">
+      <thead><tr><th>模块</th><th>职责</th><th>关键约束</th></tr></thead>
+      <tbody>
+        <tr class="grp-row"><td colspan="3">方法层 · core</td></tr>
+        <tr><td class="mono">schedule.py</td><td>命名空间、任务流排序、单任务/单领域/sweep 驱动、续跑、summary 合并写</td><td>域内串行；同参校验；status 由模式与选择共同决定</td></tr>
+        <tr><td class="mono">recursion.py</td><td>两种模式的阶段编排：提案 → probe → 合成；失败回退</td><td>4k/3k 预算；并发后按序记账；单阶段重试 1 次</td></tr>
+        <tr><td class="mono">context.py</td><td>把证据写成目录树；mission 指针；泄漏与 verdict 绊线</td><td>轨迹不按 prompt 截断；产物用判分器同款渲染</td></tr>
+        <tr><td class="mono">tree.py</td><td>c1..c8 的读/写/校验/diff/多样性</td><td>白名单、编译、frontmatter、触发词、引用、hooks schema</td></tr>
+        <tr><td class="mono">proposer.py</td><td>改进者会话：subprocess、超时重试、harvest、审计、指纹缓存</td><td>空回复不算成功；harvest 只取指定子路径</td></tr>
+        <tr><td class="mono">selection.py</td><td>候选清洗、匿名、盲选、回退、反思与经验提炼</td><td>finals-only；失败回退基线；经验三字段门槛</td></tr>
+        <tr><td class="mono">library.py</td><td>领域经验库：入库、索引重建、检索、保留/遗忘</td><td>按 domain 物理隔离；INDEX 从磁盘重建</td></tr>
+        <tr><td class="mono">prompts.py</td><td>全部作业文本（INV/DOM/合成/选择/反思）+ 执行器面描述</td><td>基准文本以值注入，不做分支；answer-free 措辞集中</td></tr>
+        <tr><td class="mono">ledger.py</td><td>预算记账与恒等式断言</td><td>R/P 精确匹配，label 不重复</td></tr>
+        <tr><td class="mono">judge.py / report.py</td><td>判分驱动与结果汇总</td><td>判分只在选择之后；失败不写 0</td></tr>
+        <tr><td class="mono">spec.py</td><td>基准/执行器/通道的抽象与值对象</td><td>Protocol + 冻结 dataclass；通道与模型必须成对覆盖</td></tr>
+        <tr><td class="mono">runmark.py</td><td>树与产物的指纹</td><td>续跑与 harness 指纹共用</td></tr>
+        <tr class="grp-row"><td colspan="3">执行器与基准</td></tr>
+        <tr><td class="mono">substrate/opencode.py</td><td>c1..c8 的 OpenCode 投影、三种安装模式、bun-run 契约、事件流渲染</td><td>常驻 24k；skills 名必须与目录一致</td></tr>
+        <tr><td class="mono">substrate/codex.py</td><td>Codex 投影（AGENTS.md/.agents/.codex）、codex_root 安装、exec 参数、thread-item 渲染</td><td>常驻 8k；hooks 只接受 command 类型</td></tr>
+        <tr><td class="mono">benchmarks/*.py</td><td>任务发现、执行 launcher、轨迹/产物读取、判分、基准专属校验</td><td>只暴露 Protocol 方法；答案键路径必须声明</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><b>规模事实</b>：43 个 Python 模块 / 14,142 行；core 5,840 行（41%），benchmarks 4,418 行（31%），substrate 1,911 行（14%），cli 1,111 行（8%）。测试 2 文件 / 605 行（<span class="mono">tests/test_workflow.py</span>、<span class="mono">tests/test_substrates.py</span>）——这是研究框架，不是生产服务，测试覆盖仍是缺口。</p>
+    </div>
+
+    <h3 id="s3-5">3.5 接口一览</h3>
+    <div class="two-col">
+      <div>
+        <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">CLI（7 个入口）</p>
+        <table class="tbl compact">
+          <thead><tr><th>命令</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">harness2</td><td>跑递归（sweep / 单任务）</td></tr>
+            <tr><td class="mono">harness2-judge</td><td>采纳之后判分（可 <span class="mono">--bases</span>）</td></tr>
+            <tr><td class="mono">harness2-report</td><td>汇总 refined 结果</td></tr>
+            <tr><td class="mono">harness2-setup</td><td>装基准与依赖（local 无需安装）</td></tr>
+            <tr><td class="mono">harness2-check</td><td>预检（凭证/依赖/任务）</td></tr>
+            <tr><td class="mono">harness2-demo</td><td>无凭证确定性 demo</td></tr>
+            <tr><td class="mono">harness2-bridge</td><td>本地模型代理（可选）</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny dim" style="margin:var(--s3) 0 6px;text-transform:uppercase;letter-spacing:.05em">substrate 扩展（详见 docs/SUBSTRATES.md）</p>
+        <p class="small" style="color:var(--text-secondary);margin:0 0 var(--s3)">oc/cx 是 Python 类，带原生基准 launcher；dsh/hermes 是 JSON manifest，跑 <span class="mono">--bench local</span>。新增框架 = 一个 manifest（无需改 core）。</p>
+        <p class="tiny dim" style="margin:var(--s3) 0 6px;text-transform:uppercase;letter-spacing:.05em">目录契约</p>
+        <div class="code" style="margin:0">runs/&lt;ns&gt;/&lt;task&gt;/
+  summary.json          <span class="c"># 任务级唯一事实源</span>
+  harnesses/&lt;label&gt;/     <span class="c"># 每个阶段被采纳的树</span>
+  context/&lt;label&gt;/       <span class="c"># 该阶段的证据快照</span>
+  selection/&lt;mode&gt;&lt;k&gt;/  <span class="c"># selection.json</span>
+  reflection/&lt;mode&gt;&lt;k&gt;/ <span class="c"># 反思证据 + edits.md</span>
+executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/  <span class="c"># 求解器真实 run_dir</span></div>
+      </div>
+      <div>
+        <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">适配器 Protocol（加基准必须实现）</p>
+        <table class="tbl compact">
+          <thead><tr><th>方法</th><th>契约</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">tasks(split)</td><td>稳定顺序；库状态依赖它可复现</td></tr>
+            <tr><td class="mono">domain_of(task)</td><td>库的检索单位</td></tr>
+            <tr><td class="mono">task_prompt(task)</td><td>剥掉评分标准与期望输出</td></tr>
+            <tr><td class="mono">task_files(task)</td><td>源材料；可选</td></tr>
+            <tr><td class="mono">execute(task, harness, run_id)</td><td>幂等；<span class="mono">None</span>=基线 harness</td></tr>
+            <tr><td class="mono">delivered(run_dir)</td><td>是否产出了要求的产物</td></tr>
+            <tr><td class="mono">trajectory(run_dir, obs_trunc)</td><td>统一动作/观测语法</td></tr>
+            <tr><td class="mono">deliverable_text / files</td><td>按判分器读取方式抽取</td></tr>
+            <tr><td class="mono">base_harness()</td><td>未修改的 c1..c8</td></tr>
+            <tr><td class="mono">validate_tree(tree)</td><td>基准专属不变式，错误话术可直接回灌</td></tr>
+            <tr><td class="mono">score(run_dir, task)</td><td>判分；<span class="mono">None</span>=失败，不是 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3 id="s3-6">3.6 数据模型</h3>
+    <p class="lead">没有数据库，但状态可以按<strong>逻辑表</strong>理解。下面 12 张逻辑表与磁盘一一对应（<span class="mono">物理落地</span>列），用于查询设计、UI 与后续「落 MySQL」的迁移评估。</p>
+    <table class="tbl">
+      <thead><tr><th>逻辑表</th><th>主键</th><th>物理落地</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">cell</td><td class="mono">(bench, substrate, mode, k, seed, tag)</td><td>namespace 字符串，不落表</td></tr>
+        <tr><td class="mono">task</td><td class="mono">task_id</td><td class="mono">runs/&lt;ns&gt;/&lt;task&gt;/task.md + context/source/</td></tr>
+        <tr><td class="mono">run</td><td class="mono">run_id</td><td class="mono">executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/</td></tr>
+        <tr><td class="mono">stage</td><td class="mono">(task, mode, k, label)</td><td class="mono">summary.modes[].stages[] + harnesses/&lt;label&gt;/</td></tr>
+        <tr><td class="mono">rollout</td><td class="mono">label（run_id 1:1）</td><td class="mono">context/rollouts/&lt;label&gt;.md + executions/…</td></tr>
+        <tr><td class="mono">selection</td><td class="mono">(task, mode, k)</td><td class="mono">selection/&lt;mode&gt;&lt;k&gt;/selection.json + summary.selections[]</td></tr>
+        <tr><td class="mono">experience</td><td class="mono">(task, mode, k)</td><td class="mono">summary.selections[].experience + reflection/…</td></tr>
+        <tr><td class="mono">library_entry</td><td class="mono">(bench, mode, k, domain, task)</td><td class="mono">library/&lt;bench&gt;/k&lt;k&gt;/&lt;mode&gt;/&lt;domain&gt;/harnesses/&lt;task&gt;/</td></tr>
+        <tr><td class="mono">harness_file</td><td class="mono">(harness_id, rel)</td><td class="mono">harnesses/&lt;label&gt;/&lt;rel&gt; · context/harness/&lt;rel&gt;</td></tr>
+        <tr><td class="mono">ledger_entry</td><td class="mono">(task, mode, k, seq)</td><td class="mono">summary.modes[].ledger.entries[]</td></tr>
+        <tr><td class="mono">budget_check</td><td class="mono">(task, mode, k)</td><td class="mono">summary.modes[].ledger（R/P/expected）</td></tr>
+        <tr><td class="mono">audit_call</td><td class="mono">(label, fingerprint)</td><td class="mono">&lt;audit&gt;/&lt;label&gt;.&lt;fp&gt;.{mission,system,response}.md + .meta.json + .workspace/</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <p><b>没有外键，也没有事务</b>：一致性靠「先写临时文件再 <span class="mono">os.replace</span>」和「从磁盘重建索引」。跨表 join 只能在读侧做（例如 UI 把 <span class="mono">summary</span> 与 <span class="mono">library</span> 按 task 拼起来）。这是文件式设计的代价，也是它能被 git/diff 的原因。</p>
+    </div>
+
+    <h3 id="s3-7">3.7 ER 图</h3>
+    <p class="lead">下图是<strong>逻辑实体关系</strong>（不是物理外键）。橙色 <span class="mono">PK</span> = 主键，紫色 <span class="mono">FK</span> = 逻辑外键；每个实体下方的 <span class="mono">rel</span> 行指向它的邻接。</p>
+
+    <div class="er-grid">
+      <div class="er-ent">
+        <div class="hd"><b>cell</b><span class="cn">实验单元</span><span class="tag">1</span></div>
+        <ul>
+          <li>bench <span class="pk">PK</span><span class="ty">str</span></li>
+          <li>substrate <span class="pk">PK</span><span class="ty">oc|cx</span></li>
+          <li>mode <span class="pk">PK</span><span class="ty">agg|seq</span></li>
+          <li>k <span class="pk">PK</span><span class="ty">int</span></li>
+          <li>seed / tag <span class="pk">PK</span><span class="ty">int?</span></li>
+          <li>namespace <span class="ty">派生</span></li>
+        </ul>
+        <div class="rel">1 ─ N <b>run</b>（同一 namespace 下所有 rollout）</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>task</b><span class="cn">任务</span><span class="tag">1</span></div>
+        <ul>
+          <li>task_id <span class="pk">PK</span><span class="ty">str</span></li>
+          <li>domain <span class="ty">str</span></li>
+          <li>split <span class="ty">str</span></li>
+          <li>stream_index <span class="ty">int</span></li>
+        </ul>
+        <div class="rel">1 ─ N <b>run</b> · <b>stage</b> · <b>ledger_entry</b>；1 ─ 1 <b>selection</b>/(mode,k)</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>run</b><span class="cn">一次 rollout</span><span class="tag">N</span></div>
+        <ul>
+          <li>run_id <span class="pk">PK</span><span class="ty">str</span></li>
+          <li>task_id <span class="fk">FK</span><span class="ty">→task</span></li>
+          <li>label <span class="ty">base|inv|dom|agg|c</span></li>
+          <li>role <span class="ty">base|cand|final</span></li>
+          <li>ok / delivered <span class="ty">bool</span></li>
+          <li>cost_usd / wall_s <span class="ty">num</span></li>
+        </ul>
+        <div class="rel">1 ─ 1 <b>rollout</b>（轨迹与产物的物化视图）</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>stage</b><span class="cn">阶段</span><span class="tag">N</span></div>
+        <ul>
+          <li>task_id + mode + k <span class="fk">FK</span><span class="ty">→task</span></li>
+          <li>label <span class="pk">PK</span><span class="ty">inv1…</span></li>
+          <li>dim <span class="ty">INV|DOM|AGG|COMPOSE</span></li>
+          <li>round_t <span class="ty">int?</span></li>
+          <li>attempts / cached <span class="ty">int/bool</span></li>
+          <li>kept_base / fell_back <span class="ty">bool</span></li>
+          <li>notes / error <span class="ty">text</span></li>
+        </ul>
+        <div class="rel">1 ─ 0..1 <b>run</b>（该阶段的 rollout）· 1 ─ N <b>harness_file</b> · 1 ─ N <b>audit_call</b></div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>rollout</b><span class="cn">轨迹/产物</span><span class="tag">1</span></div>
+        <ul>
+          <li>run_id <span class="pk">PK</span> <span class="fk">FK</span><span class="ty">→run</span></li>
+          <li>trajectory_path <span class="ty">path</span></li>
+          <li>deliverable_path <span class="ty">path</span></li>
+          <li>evidence <span class="ty">deliverable|trajectory</span></li>
+        </ul>
+        <div class="rel">被 <b>selection</b> 以 chosen_run 引用；被 <b>experience</b> 以 edits 引用</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>selection</b><span class="cn">盲选</span><span class="tag">1</span></div>
+        <ul>
+          <li>task_id+mode+k <span class="pk">PK</span><span class="ty">—</span></li>
+          <li>chosen_label <span class="fk">FK</span><span class="ty">→run.label</span></li>
+          <li>id_map <span class="ty">json A..Z</span></li>
+          <li>why <span class="ty">text</span></li>
+          <li>ok / fallback / trivial <span class="ty">bool</span></li>
+          <li>n_candidates / dropped <span class="ty">int[]</span></li>
+        </ul>
+        <div class="rel">1 ─ 0..1 <b>experience</b>（反思成功后）</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>experience</b><span class="cn">可迁移经验</span><span class="tag">1</span></div>
+        <ul>
+          <li>task_id+mode+k <span class="fk">FK</span><span class="ty">→selection</span></li>
+          <li>cue / lesson / evidence <span class="ty">text</span></li>
+          <li>confidence <span class="ty">text?</span></li>
+          <li>edits <span class="ty">text</span></li>
+        </ul>
+        <div class="rel">1 ─ 0..1 <b>library_entry</b>（过门槛才入库）</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>library_entry</b><span class="cn">库条目</span><span class="tag">N</span></div>
+        <ul>
+          <li>bench+mode+k <span class="fk">FK</span><span class="ty">→cell</span></li>
+          <li>domain <span class="ty">str</span></li>
+          <li>task_id <span class="fk">FK</span><span class="ty">→task</span></li>
+          <li>adopted_label <span class="fk">FK</span><span class="ty">→run.label</span></li>
+          <li>harness_path / experience_path <span class="ty">path</span></li>
+        </ul>
+        <div class="rel">1 ─ N <b>harness_file</b>（完整被采纳树）</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>harness_file</b><span class="cn">组件文件</span><span class="tag">N</span></div>
+        <ul>
+          <li>harness_id <span class="pk">PK</span><span class="ty">stage|library</span></li>
+          <li>rel <span class="pk">PK</span><span class="ty">c1..c8 路径</span></li>
+          <li>body <span class="ty">text</span></li>
+          <li>in_tree / editable <span class="ty">bool</span></li>
+          <li>rejected <span class="ty">bool</span></li>
+        </ul>
+        <div class="rel">路径合法性由 <b>SurfaceSpec</b> 判定；越界 → rejected → 整棵提案作废</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>ledger_entry</b><span class="cn">账本行</span><span class="tag">N</span></div>
+        <ul>
+          <li>task+mode+k+seq <span class="pk">PK</span><span class="ty">—</span></li>
+          <li>kind <span class="ty">rollout|session</span></li>
+          <li>label <span class="ty">str</span></li>
+          <li>usd / cached / attempts <span class="ty">num/bool/int</span></li>
+        </ul>
+        <div class="rel">N ─ 1 <b>budget_check</b>（聚合成 R/P）</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>budget_check</b><span class="cn">预算断言</span><span class="tag">1</span></div>
+        <ul>
+          <li>task+mode+k <span class="pk">PK</span><span class="ty">—</span></li>
+          <li>R / expected_R <span class="ty">4k</span></li>
+          <li>P / expected_P <span class="ty">3k</span></li>
+          <li>ok <span class="ty">bool</span></li>
+        </ul>
+        <div class="rel">不等 → <b>BudgetError</b>；任务失败而不是「大概跑完」</div>
+      </div>
+
+      <div class="er-ent">
+        <div class="hd"><b>audit_call</b><span class="cn">会话审计</span><span class="tag">N</span></div>
+        <ul>
+          <li>label <span class="pk">PK</span><span class="ty">stage / select / reflect</span></li>
+          <li>fingerprint <span class="pk">PK</span><span class="ty">sha256[:16]</span></li>
+          <li>channel / model / effort <span class="ty">str</span></li>
+          <li>attempts / wall_s / cost <span class="ty">num</span></li>
+          <li>response_path / workspace <span class="ty">path</span></li>
+        </ul>
+        <div class="rel">N ─ 1 <b>stage</b>（按 label 关联）· 也是缓存命中判据</div>
+      </div>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>关系</th><th>基数</th><th>连接键</th><th>读侧如何 join</th></tr></thead>
+      <tbody>
+        <tr><td>cell → run</td><td class="mono">1 : N</td><td>namespace</td><td>路径前缀</td></tr>
+        <tr><td>task → run</td><td class="mono">1 : N</td><td>task_id</td><td>路径：<span class="mono">runs/&lt;ns&gt;/&lt;task&gt;/executions</span></td></tr>
+        <tr><td>run → rollout</td><td class="mono">1 : 1</td><td>run_id / label</td><td>名称一致：<span class="mono">rollouts/&lt;label&gt;.md</span></td></tr>
+        <tr><td>stage → harness_file</td><td class="mono">1 : N</td><td>harness 目录</td><td>目录遍历 + 白名单</td></tr>
+        <tr><td>stage → audit_call</td><td class="mono">1 : N</td><td>label</td><td>文件名前缀</td></tr>
+        <tr><td>selection → run</td><td class="mono">N : 1</td><td>chosen_label</td><td>summary 内直接存 chosen_run_id</td></tr>
+        <tr><td>selection → experience</td><td class="mono">1 : 0..1</td><td>task+mode+k</td><td>summary 内联</td></tr>
+        <tr><td>experience → library_entry</td><td class="mono">1 : 0..1</td><td>task+mode+k</td><td>library 目录 + EXPERIENCE.md</td></tr>
+        <tr><td>ledger_entry → budget_check</td><td class="mono">N : 1</td><td>task+mode+k</td><td>summary 内 aggregate</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout ok">
+      <p><b>为什么 ER 值得画：</b>它把「文件式状态」翻译成可查询的形状。一旦产品化要落数据库（例如把 <span class="mono">summary.json</span> 拆成 run/stage/selection 三表），这张图就是迁移蓝图；也解释了为什么 UI 原型能只读文件就还原出「任务 → 阶段 → 采纳 → 经验」的完整故事。</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 4 ══════════════════ -->
+  <section class="doc-sec" id="s4">
+    <h2 class="sec"><span class="num">4</span>核心时序</h2>
+    <p class="q">本章回答：一次任务从触发到判分，谁对谁说了什么；失败时往哪走；缓存与续跑在哪里生效。</p>
+
+    <h3 id="s4-1">4.1 一次任务（并行模式）的总体流程</h3>
+    <div class="chain">
+      <div class="node"><b>0 · 解析任务流</b><span class="tiny muted">域内排序 · seed 可复现</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>1 · 基线 k 次</b><span class="tiny muted">未修改 harness</span></div>
+      <span class="arrow">→</span>
+      <div class="node hot"><b>2 · 提案 2k</b><span class="tiny muted">INV/DOM 各 k</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>3 · Probe 2k</b><span class="tiny muted">每候选 1 次</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>4 · 合成 k</b><span class="tiny muted">看全量证据</span></div>
+    </div>
+    <div class="chain">
+      <div class="node"><b>5 · 盲选 1</b><span class="tiny muted">只看产物</span></div>
+      <span class="arrow">→</span>
+      <div class="node good"><b>6 · 反思 1</b><span class="tiny muted">edits + lesson</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>7 · 入库</b><span class="tiny muted">过三字段门槛</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>8 · 判分</b><span class="tiny muted">选择之后，可延后</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>9 · 写 summary</b><span class="tiny muted">原子替换 + 锁</span></div>
+    </div>
+
+    <figure>
+      <figcaption><b>4.1 端到端时序</b>（并行模式；串行模式把 ②–④ 重复 k 轮，见 §4.5）</figcaption>
+      <div class="seq-wrap"><table class="seq">
+        <thead><tr><th class="actor-sys">调度 / CLI</th><th class="actor-sys">提案者（agent）</th><th>求解器 rollout</th><th>合成器</th><th>选择者</th><th>反思者</th></tr></thead>
+        <tbody>
+          <tr><td class="msg" colspan="2"><span class="label"><span class="n">①</span><b>读 base harness</b> + 解析任务流 + 恢复判断</span><span class="arrow"></span></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="note">若 <span class="mono">summary.json</span> 已 ok 且产物/harness 指纹一致 → 直接 skip</td><td></td><td class="note">k 次基线 rollout（同 harness）</td><td></td><td></td><td></td></tr>
+          <tr><td class="note">建证据树 <span class="mono">context/&lt;label&gt;/</span>：task、source、rollouts、deliverables、library</td><td></td><td class="note">返回 run_dir；delivered 由 adapter 判</td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="msg" colspan="2"><span class="label"><span class="n">②</span><b>2k 个提案并发</b>（每个是独立会话，只能看到证据与自己那份 harness）</span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="note">编辑 <span class="mono">context/harness/</span>；只写改动文件（省略即继承）</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="note">harvest 回传 → 读树 → 白名单/校验 → 失败重试 1 次 → 仍失败则回退</td><td class="note">回复 <span class="mono">&lt;notes&gt;</span>：每个改动对应的轨迹瞬间</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">③</span><b>每个候选 rollout 1 次</b>（并发，账本按固定顺序记）</span><span class="arrow"></span></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td class="note">产出新轨迹与产物 → 作为 pool 证据</td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td class="msg" colspan="3"><span class="label"><span class="n">④</span><b>k 个合成器各自产出终版</b>：merge / 整体采纳 / KEEP_BASE</span><span class="arrow"></span></td></tr>
+          <tr><td></td><td></td><td class="note">每个终版再 rollout 1 次（这就是盲选的输入）</td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">⑤</span><b>匿名盲选</b>：只给产物文本，A/B/C 打乱</span><span class="arrow"></span></td></tr>
+          <tr><td class="note">写 <span class="mono">selection.json</span>：chosen_label / why / id_map</td><td></td><td></td><td></td><td class="note">选择失败 → 回退到已交付基线</td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td class="msg"><span class="label"><span class="n">⑥</span><b>反思</b>：diff 全部候选 vs base，写 edits 表 + 一条 lesson</span><span class="arrow rtl"></span></td></tr>
+          <tr><td class="note">过门槛才 <span class="mono">library.add</span>；重建 INDEX.md</td><td></td><td></td><td></td><td></td><td class="note">无对比 → NO_ENTRY</td></tr>
+          <tr><td class="note"><b>异常分支</b>：任一阶段异常 → 记 <span class="mono">fell_back</span>，任务继续；全部失败 → status=base-failed</td><td class="note">ProposerError → 阶段失败</td><td class="note">rollout 死亡 → RunView(ok=false)，不中断</td><td class="note">无有效候选 → 选择错误</td><td class="note">选择失败 → fallback</td><td class="note">反思失败 → 不阻拦采纳</td></tr>
+        </tbody>
+      </table></div>
+    </figure>
+
+    <h3 id="s4-2">4.2 单个 stage 的细节流程</h3>
+    <p class="lead">这一张图是整套系统最小的工作单元：<b>建证据 → 开会话 → 收树 → 校验 → 真跑 → 记账</b>。失败点都在图里。</p>
+    <div class="chain">
+      <div class="node"><b>build context</b><span class="tiny muted">写 task/source/rollouts/deliverables/harness/library/pool</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>mission</b><span class="tiny muted">短指针 + 作业文本</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>proposer.call</b><span class="tiny muted">缓存 → 子进程 → harvest</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>read_tree</b><span class="tiny muted">白名单 + rejected</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>validate</b><span class="tiny muted">结构/编译/触发词/引用/hooks</span></div>
+      <span class="arrow">→</span>
+      <div class="node good"><b>rollout</b><span class="tiny muted">写树 → execute → delivered</span></div>
+    </div>
+    <div class="branch">
+      <div class="side ok"><h6>正常路径</h6>
+        <p class="small" style="margin:0">reply.text 非空 → workspace 回传 → 树在可编辑面内 → 校验通过 → 记账（attempts/cached/usd）→ 进入 probe。阶段 <span class="mono">kept_base</span> 由 diff 判定（是否与回退树完全一致）。</p>
+      </div>
+      <div class="side err"><h6>四种失败与去向</h6>
+        <ul class="small" style="margin:0;padding-left:16px;line-height:1.9">
+          <li><b>空回复 / 超时</b> → 传输重试（默认 2）；仍失败 → <span class="mono">ProposerError</span> → 阶段 <span class="mono">fell_back</span></li>
+          <li><b>workspace 没回来</b> → 反馈「在原位编辑」→ 重试</li>
+          <li><b>越界文件</b> → 反馈具体路径 + 命名规则 → 重试</li>
+          <li><b>校验失败</b> → 错误原文回灌 → 重试 1 次 → 仍失败回退</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <p><b>为什么先校验再 rollout</b>：坏树跑一次就是真钱与真时间。校验器的错误话术是给模型看的（可直接执行），不是给日志看的——「name 必须与目录一致，否则加载时被静默丢弃」这种话，模型才改得对。</p>
+    </div>
+
+    <figure>
+      <figcaption><b>4.2 失败分支时序</b>（以「校验被拒」为主干）</figcaption>
+      <div class="seq-wrap"><table class="seq">
+        <thead><tr><th class="actor-sys">调度</th><th>证据树</th><th class="actor-sys">提案会话</th><th>校验器</th><th>求解器</th></tr></thead>
+        <tbody>
+          <tr><td class="msg" colspan="2"><span class="label"><span class="n">①</span><b>build()</b></span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="note">写文件；检查 leak_globs 与 7 个 verdict 标记</td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">②</span><b>一条 mission 指针</b> → 会话读文件、改 <span class="mono">context/harness/</span></span><span class="arrow"></span></td><td></td></tr>
+          <tr><td></td><td></td><td class="note">不执行候选 harness 里的任何脚本（证据是数据）</td><td></td><td></td></tr>
+          <tr><td class="msg" colspan="2"><span class="label"><span class="n">③</span><b>harvest context/harness → read_tree(rejected)</b></span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td class="note">rejected 非空 → 整棵作废</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">④</span><b>validate(tree)</b>：8 类检查 + 基准不变式 + verdict 扫描</span><span class="arrow"></span></td></tr>
+          <tr><td class="note">失败 → 错误回灌 → 重试 1 次（<span class="mono">STAGE_ATTEMPTS=2</span>）</td><td></td><td></td><td class="note">全部错误拼接，一次返回</td><td></td></tr>
+          <tr><td class="msg" colspan="3"><span class="label"><span class="n">⑤</span><b>通过 → write_tree → execute 一次</b></span><span class="arrow"></span></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td class="note">幂等 run_id；缺产物 → RunView.ok=false</td></tr>
+        </tbody>
+      </table></div>
+    </figure>
+
+    <h3 id="s4-3">4.3 合成与盲选</h3>
+    <figure>
+      <figcaption><b>4.3 合成 → 匿名 → 选择 → 落盘</b></figcaption>
+      <div class="seq-wrap"><table class="seq">
+        <thead><tr><th class="actor-sys">调度</th><th class="actor-sys">合成器 ×k</th><th>证据池</th><th class="actor-sys">选择者</th><th>summary.json</th></tr></thead>
+        <tbody>
+          <tr><td class="msg" colspan="2"><span class="label"><span class="n">①</span><b>compose(全量候选 + 各自 rollout + decisions)</b></span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="note">每处决策写成 <span class="mono">kept|revised|dropped → 改动 → 轨迹瞬间</span></td><td class="note">pool/&lt;label&gt;/{harness,diff,rollout,produced}</td><td></td><td></td></tr>
+          <tr><td class="note">终版各自 rollout 1 次</td><td></td><td class="note">替代产物进入池</td><td></td><td></td></tr>
+          <tr><td class="msg" colspan="3"><span class="label"><span class="n">②</span><b>selection_pool：只取 k 个 finals</b> → 丢弃非交付 → 匿名 A..Z（种子洗牌）</span><span class="arrow"></span></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td class="note">只读 <span class="mono">task.md/source/candidates</span>；没有 harness、没有 run、没有分数</td><td></td></tr>
+          <tr><td></td><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">③</span><b>```choice A``` + &lt;why&gt;</b></span><span class="arrow rtl"></span></td></tr>
+          <tr><td class="note">写 selection.json；chosen_run_id / id_map / why / dropped</td><td></td><td></td><td class="note">失败 → 回退（记 fallback）</td><td class="note">按 <span class="mono">mode</span> 合并写，不覆盖另一模式</td></tr>
+        </tbody>
+      </table></div>
+    </figure>
+    <div class="callout warn">
+      <p><b>为什么池里没有基线</b>：基线入池会让「不采纳」成为合法结果，从而稀释「一次 step 是否有效」的度量。当前约定是：<b>k 个终版里必选一个</b>；「不该改」由合成器的 <span class="mono">KEEP_BASE</span> 表达——终版可以与基线同树。</p>
+    </div>
+
+    <h3 id="s4-4">4.4 反思与入库</h3>
+    <figure>
+      <figcaption><b>4.4 采纳之后才反思</b></figcaption>
+      <div class="seq-wrap"><table class="seq">
+        <thead><tr><th class="actor-sys">调度</th><th>反思证据</th><th class="actor-sys">反思者</th><th>经验库</th><th>下次任务</th></tr></thead>
+        <tbody>
+          <tr><td class="msg" colspan="2"><span class="label"><span class="n">①</span><b>build 反思树</b>：全部候选 + base_harness + adoption.json</span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="note">diff 每个候选 vs base；给出 4 种 verdict</td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">②</span><b>&lt;edits&gt; 表 + &lt;experience&gt;（cue/lesson/evidence/confidence）</b></span><span class="arrow"></span></td><td></td></tr>
+          <tr><td></td><td></td><td class="note">三字段缺一 → 只留 edits，不产出 lesson</td><td class="note">过门槛才 add；写 EXPERIENCE.md；重建 INDEX</td><td></td></tr>
+          <tr><td></td><td></td><td></td><td class="note">按 domain 隔离；下次任务作为证据被读</td><td class="note"><b>仍从 base harness 起步</b>（不套用）</td></tr>
+        </tbody>
+      </table></div>
+    </figure>
+
+    <h3 id="s4-5">4.5 串行模式的 k 轮</h3>
+    <div class="chain">
+      <div class="node"><b>round 1</b><span class="tiny muted">base → inv1/dom1 → c1</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>round 2</b><span class="tiny muted">c1 → inv2/dom2 → c2</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>…</b></div>
+      <span class="arrow">→</span>
+      <div class="node good"><b>round k</b><span class="tiny muted">c(k-1) → … → ck（最终态）</span></div>
+    </div>
+    <figure>
+      <figcaption><b>4.5 第 t 轮内部</b>（每轮多一次「读上一轮 checkpoint」）</figcaption>
+      <div class="seq-wrap"><table class="seq">
+        <thead><tr><th class="actor-sys">调度</th><th>上一轮 checkpoint</th><th>提案者 ×2</th><th class="actor-sys">合成器</th><th>历史池</th></tr></thead>
+        <tbody>
+          <tr><td class="msg" colspan="2"><span class="label"><span class="n">①</span><b>写当前 checkpoint 到 context/harness/</b></span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="note">第 1 轮 = base；之后 = 上一轮 c(t-1)</td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">②</span><b>INV/DOM 两个候选（fallback = 当前 checkpoint）</b></span><span class="arrow"></span></td><td></td></tr>
+          <tr><td></td><td></td><td class="note">证据含 base 基线 + 所有历史轮次</td><td></td><td class="note">历史池随轮次增长</td></tr>
+          <tr><td></td><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">③</span><b>compose c_t</b>：可还原更早 checkpoint（REPRODUCE）</span><span class="arrow"></span></td></tr>
+          <tr><td class="note">c_t rollout 1 次 → 成为下一轮的 on-policy 证据</td><td></td><td></td><td class="note">KEEP_BASE = 保持当前 checkpoint，不是回 base</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </figure>
+    <div class="callout">
+      <p><b>串行的代价与收益</b>：每轮都以「上一轮改完的树」为编辑对象，所以它能做<span class="mono">REPRODUCE an earlier checkpoint verbatim</span>（漂了能退回去）；代价是后几轮的证据越来越多，上下文与 token 成本上升——这也是 §7.5「膨胀」最明显的入口。</p>
+    </div>
+
+    <h3 id="s4-6">4.6 缓存、续跑与失败的去向</h3>
+    <div class="chain">
+      <div class="node"><b>命中指纹</b><span class="tiny muted">直接返回，usd=0</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>读 summary</b><span class="tiny muted">status=ok 且覆盖请求的模式</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>验产物/树指纹</b><span class="tiny muted">chosen run 可用、harness 未变</span></div>
+      <span class="arrow">→</span>
+      <div class="node good"><b>skip 并回放库</b><span class="tiny muted">不重跑、不重复记账</span></div>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>失败</th><th>记录</th><th>对任务的影响</th><th>刻意不走的路</th></tr></thead>
+      <tbody>
+        <tr><td>提案/传输失败</td><td class="mono">Stage.fell_back + error</td><td>该阶段回退到当前树，继续</td><td>不整任务重跑（除基线全死）</td></tr>
+        <tr><td>校验失败</td><td>错误回灌 → 重试 1 次</td><td>仍失败则回退</td><td>不静默丢弃单个文件</td></tr>
+        <tr><td>rollout 死亡</td><td class="mono">RunView(ok=false)</td><td>进池但会被判非交付；不中断</td><td>不当 0 分、不写假产物</td></tr>
+        <tr><td>选择失败</td><td class="mono">fallback=true + error</td><td>退到排序第一个终版（finals-only 池里没有基线可退）</td><td>不抛异常中断任务</td></tr>
+        <tr><td>反思失败</td><td>无 experience</td><td>采纳照常，只是不入库</td><td>不阻塞主流程</td></tr>
+        <tr><td>判分失败</td><td class="mono">unscored</td><td>报告显示未评分</td><td>不写 0、不缓存为 0</td></tr>
+        <tr><td>预算对不上</td><td class="mono">BudgetError</td><td>任务失败</td><td>不「差不多就行」</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════════════ 5 ══════════════════ -->
+  <section class="doc-sec" id="s5">
+    <h2 class="sec"><span class="num">5</span>使用指南</h2>
+    <p class="q">本章回答：怎么装、怎么先免费看一遍、怎么跑一个基准、参数怎么配、结果在哪、怎么复现。</p>
+
+    <h3 id="s5-1">5.1 安装与自检</h3>
+    <div class="two-col">
+      <div>
+        <p><b>环境</b>：Linux + Python 3.12/3.13 + uv。基准另需 Node.js 20+、gcloud；LAB 需 Pandoc/Poppler；WorkBuddy 需 Docker。</p>
+        <pre class="code">uv venv --python 3.12 .venv
+source .venv/bin/activate
+uv pip install -e '.[render]'</pre>
+        <p><b>无需凭证的本地验证</b>（确定性编辑者 + 真 Python 执行）：</p>
+        <pre class="code">harness2-demo --output runs/demo --k 2</pre>
+        <p class="tiny dim">demo 会把 <span class="mono">scripts/summarize.py</span> 里 <span class="mono">if amount &gt; 0</span> 去掉，probe 的总分随之改变；选择器按源 CSV 核对后采纳。它证明的是<b>流程与账本</b>，不是模型能力。</p>
+      </div>
+      <div>
+        <p><b>接真模型前</b>：拷 <span class="mono">.env.example</span> → <span class="mono">.env</span>，填模型与端点；<span class="mono">gcloud auth application-default login</span>。</p>
+        <pre class="code">harness2-setup lab     <span class="c"># 装基准与依赖</span>
+harness2-check --bench lab   <span class="c"># 预检</span>
+harness2 --bench lab --k 1 --mode parallel \
+  --dry-run            <span class="c"># 只看任务选择，不调模型</span></pre>
+        <div class="callout warn" style="margin-top:var(--s3)">
+          <p><b>自检顺序</b>：demo → dry-run → <span class="mono">--max-tasks 1</span> 单任务 → 再放大。基准跑的每一步都花钱，且判分要同参数。</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="s5-2">5.2 跑一个基准</h3>
+    <pre class="code">harness2-setup lab
+harness2-check --bench lab
+harness2 --bench lab --k 1 --mode parallel \
+  --only-domains antitrust-competition --max-tasks 1
+harness2-judge --bench lab --k 1 --mode parallel
+harness2-report --bench lab --k 1 --mode parallel</pre>
+    <table class="tbl">
+      <thead><tr><th>基准</th><th>规模 / 域</th><th>安装</th><th>特殊依赖</th></tr></thead>
+      <tbody>
+        <tr><td><b>JobBench</b></td><td>职业任务；按职业目录分组</td><td class="mono">harness2-setup jb</td><td>HuggingFace 下载（记录 revision）</td></tr>
+        <tr><td><b>LAB</b></td><td>法律任务，<b>1,143</b> 个；按执业领域分组</td><td class="mono">harness2-setup lab</td><td>Pandoc · Poppler</td></tr>
+        <tr><td><b>WorkBuddy-Bench</b></td><td>办公 / 网页 / 代码三 subset</td><td class="mono">harness2-setup wb</td><td>Docker</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted">换执行器：所有命令加 <span class="mono">--substrate cx</span>（Codex）。换模式：<span class="mono">--mode sequential</span>。<b>run / judge / report 必须同 bench、executor、subset、k、mode、seed</b>，否则读数不可比。</p>
+
+    <h3 id="s5-3">5.3 参数速查</h3>
+    <table class="tbl">
+      <thead><tr><th>参数</th><th>作用</th><th>注意</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">--bench</td><td>选择基准</td><td>一次只能一个</td></tr>
+        <tr><td class="mono">--k</td><td>任务级递归预算</td><td>R=4k / P=3k 线性增长</td></tr>
+        <tr><td class="mono">--mode</td><td>parallel / sequential</td><td>宽 vs 深；与 k 一起进 namespace</td></tr>
+        <tr><td class="mono">--substrate</td><td>oc / cx</td><td>换执行器等于换基线</td></tr>
+        <tr><td class="mono">--workers</td><td>并行领域数</td><td>域内仍串行</td></tr>
+        <tr><td class="mono">--seed</td><td>任务流洗牌</td><td>不控制模型采样；进 namespace</td></tr>
+        <tr><td class="mono">--only-domains</td><td>限定领域</td><td>未知领域直接报错并列出现有值</td></tr>
+        <tr><td class="mono">--max-tasks</td><td><b>每域</b>上限</td><td>不是全局上限</td></tr>
+        <tr><td class="mono">--dry-run</td><td>只预览任务选择</td><td>零模型调用</td></tr>
+        <tr><td class="mono">--split-file</td><td>用切分文件（train/test）</td><td>默认 train 0.5；用于留出评估</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s5-4">5.4 结果与续跑</h3>
+    <div class="two-col">
+      <div>
+        <pre class="code">runs/&lt;ns&gt;/&lt;task&gt;/
+  summary.json
+  harnesses/{base,inv1,dom1,agg1,c1,…}/
+  context/&lt;label&gt;/
+  selection/agg2/selection.json
+  reflection/agg2/ + .experience/
+executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/</pre>
+      </div>
+      <div>
+        <p><b>续跑 = 重复同一条命令</b>。判定条件：summary 覆盖所有请求的模式且 <span class="mono">status=ok</span>、chosen run 目录还在、产物可重读、harness 指纹一致。任一不符 → <b>重跑该任务</b>（不是拼接半成品）。</p>
+        <p class="small muted">换模型或换任务选择时，用新的 <span class="mono">HARNESS2_RUNS_DIR</span>：namespace 会变，旧缓存不会被误用。</p>
+      </div>
+    </div>
+
+    <h3 id="s5-5">5.5 成本与复现纪律</h3>
+    <table class="tbl">
+      <thead><tr><th>k</th><th>rollouts / 任务</th><th>编辑会话 / 任务</th><th>另有</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td class="mono">4</td><td class="mono">3</td><td>反思 1；<b>无选择会话</b></td></tr>
+        <tr><td class="mono">2</td><td class="mono">8</td><td class="mono">6</td><td>选择 1 + 反思 1</td></tr>
+        <tr><td class="mono">3</td><td class="mono">12</td><td class="mono">9</td><td>选择 1 + 反思 1</td></tr>
+        <tr><td class="mono">4</td><td class="mono">16</td><td class="mono">12</td><td>选择 1 + 反思 1</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><b>复现五件套</b>：同一 bench / executor / subset / k / mode / seed；同一 runs 根；同一 judge 模型；同一网络限制；同一数据集 revision（JobBench 下载时记录）。少一件，读数就可能不可比。</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 6 ══════════════════ -->
+  <section class="doc-sec" id="s6">
+    <h2 class="sec"><span class="num">6</span>界面原型</h2>
+    <p class="q">本章回答：如果给这套方法做一个控制台，它应该长什么样、每页回答什么问题、哪些数字可以点、哪些绝不能展示。</p>
+
+    <h3 id="p0">6.0 全局交互纪律</h3>
+    <div class="grid g2">
+      <div>
+        <table class="tbl">
+          <thead><tr><th>纪律</th><th>做法</th></tr></thead>
+          <tbody>
+            <tr><td><b>演示态显式</b></td><td>每页顶部 + 浏览器框右上角「演示数据」；点回文档锚点</td></tr>
+            <tr><td><b>状态四态</b></td><td>loading / 空 / 错误 / 正常；空库有专用文案，不是空白</td></tr>
+            <tr><td><b>只读优先</b></td><td>证据、账本、报告默认只读；破坏性动作（重跑、删除库条目）二次确认</td></tr>
+            <tr><td><b>数字可追</b></td><td>每个数字旁标来源（summary / ledger / library / 判分）</td></tr>
+            <tr><td><b>不展示分数给改进者</b></td><td>界面可以给人看分，但改进链路的证据视图里没有分</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <p class="small" style="color:var(--text-secondary)"><b>页面清单</b>（7 页，独立文件）：</p>
+        <table class="tbl compact">
+          <tbody>
+            <tr><td class="mono">workbench.html</td><td>总览：run 身份、领域矩阵、最近任务、异常事件</td></tr>
+            <tr><td class="mono">run.html</td><td>单任务：基线、阶段、采纳、反思、回退</td></tr>
+            <tr><td class="mono">pipeline.html</td><td>四列：base / propose / probe / compose + diff 抽屉</td></tr>
+            <tr><td class="mono">evidence.html</td><td>证据树 + 内容 + 纪律（无分数的物理体现）</td></tr>
+            <tr><td class="mono">library.html</td><td>领域库：INDEX / EXPERIENCE / 门槛 / 空态</td></tr>
+            <tr><td class="mono">ledger.html</td><td>账本：恒等式、规模换算、指纹缓存</td></tr>
+            <tr><td class="mono">report.html</td><td>报告：base vs refined、判分口径、复现命令</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout warn">
+      <p><b>原型与实现的差距</b>：原型假设了「run 列表 / 库浏览 / 报告」这些查询能力；当前实现只有 CLI + 文件。它读的是 <span class="mono">summary.json</span> 与 <span class="mono">library/</span>，所以差距在<b>查询层</b>，不在数据模型——§3.7 的 ER 就是可查询化的依据。</p>
+      <p style="margin-top:6px">iframe 内是<b>独立页面</b>，可上下滚动；也可以点「新窗口打开」全屏阅读。原型页顶部的「回文档」会跳回本章锚点。</p>
+    </div>
+
+    <h3 id="p1">6.1 总览 · run 身份与领域矩阵</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「这次 run 覆盖了哪些领域、哪些任务已采纳、今天出过什么异常」。所有数字为演示值；唯一真实口径是 run 目录下的 <span class="mono">summary.json</span>。带 <span class="mono">*</span> 的 Δ 取自 README 报告口径（绝对分未给，故不显示 base→refined）。</p>
+    <div class="proto">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/workbench.html</span><span class="fake">演示数据</span><a class="open" href="prototype/workbench.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/workbench.html" title="总览原型" loading="lazy"></iframe>
+    </div>
+
+    <h3 id="p2">6.2 任务运行 · 一个任务的全部证据</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「这个任务跑了几次、哪些阶段回退过、为什么选了 agg1」。数据取自本仓库 <span class="mono">runs/demo</span>：基线 105.25 → 修复后 85.15。</p>
+    <div class="proto">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/run.html</span><span class="fake">演示数据</span><a class="open" href="prototype/run.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/run.html" title="任务运行原型" loading="lazy"></iframe>
+    </div>
+
+    <h3 id="p3">6.3 流水线 · Propose–Probe–Compose</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「候选从哪来、每个候选真跑出了什么、合成器怎么取舍」。点任意候选卡片看 diff、notes 与校验五项。</p>
+    <div class="proto tall">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/pipeline.html</span><span class="fake">演示数据</span><a class="open" href="prototype/pipeline.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/pipeline.html" title="流水线原型" loading="lazy"></iframe>
+    </div>
+
+    <h3 id="p4">6.4 证据浏览器 · 无分数的物理体现</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「改进者/选择者到底看到了什么、哪些东西被刻意拿掉了」。右侧「不在证据里」是这一页的重点。</p>
+    <div class="proto">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/evidence.html</span><span class="fake">演示数据</span><a class="open" href="prototype/evidence.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/evidence.html" title="证据浏览器原型" loading="lazy"></iframe>
+    </div>
+
+    <h3 id="p5">6.5 经验库 · 什么算「可迁移」</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「库里到底存什么、入库门槛是什么、为什么下次不能直接套用」。内容来自 <span class="mono">runs/demo/library</span>。</p>
+    <div class="proto">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/library.html</span><span class="fake">演示数据</span><a class="open" href="prototype/library.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/library.html" title="经验库原型" loading="lazy"></iframe>
+    </div>
+
+    <h3 id="p6">6.6 预算账本 · 断言而不是估算</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「这次实验有没有偷工：R/P 对不对、有没有命中缓存、钱花在哪一段」。demo 无计价，usd 全 0。</p>
+    <div class="proto">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/ledger.html</span><span class="fake">演示数据</span><a class="open" href="prototype/ledger.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/ledger.html" title="预算账本原型" loading="lazy"></iframe>
+    </div>
+
+    <h3 id="p7">6.7 结果报告 · 未评分不是 0 分</h3>
+    <p class="proto-note"><span class="chip warn">演示数据</span>回答「refined 到底比 base 好多少、口径是什么、怎么复现」。三个基准只展示 README 报告的 Δ（绝对分原文未给，页面留「—」）；只有 demo 行是真实读数。</p>
+    <div class="proto">
+      <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">prototype/report.html</span><span class="fake">演示数据</span><a class="open" href="prototype/report.html" target="_blank">新窗口打开 ↗</a></div>
+      <iframe src="prototype/report.html" title="结果报告原型" loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 7 ══════════════════ -->
+  <section class="doc-sec" id="s7">
+    <h2 class="sec"><span class="num">7</span>难题与解决方案</h2>
+    <p class="q">本章回答十个真问题：无真值、过拟合、通用性、有效性、膨胀、学习信号、越权、泄漏、成本、安全。每节都写「现在怎么做 / 残留缺口 / 最小加固」。<b>缺口是这套方法的一部分，不藏。</b></p>
+
+    <div class="callout warn">
+      <p><b>读法</b>：这一章不是营销页。每节的「残留缺口」都是当前代码里真实存在的限制，「最小加固」是可以在不改架构的前提下做的事；「验收信号」是你加固之后应该观察到的变化。如果只能做一件事，先做 §7.4 的候选重复采样。</p>
+    </div>
+
+    <h3 id="s7-1">7.1 没有标准答案：信号从哪里来</h3>
+    <p class="q">真实专业任务没有 rubric、没有单元测试、没人给你打分。没有分数，怎么知道改对了？</p>
+    <table class="tbl">
+      <thead><tr><th>做法</th><th>机制</th><th>代价 / 边界</th></tr></thead>
+      <tbody>
+        <tr><td><b>行为对照</b></td><td>同一任务上，基线 k 次 rollout 与候选 rollout 的差异就是信号；重复失败=真问题，分歧=最便宜的收益</td><td>没有统计显著性；单次差异可能是采样噪声</td></tr>
+        <tr><td><b>证据可追溯</b></td><td>每处改动必须点名轨迹里的一个瞬间；说不出来就是猜测</td><td>「瞬间」由模型自己指认，可能指错</td></tr>
+        <tr><td><b>answer-free</b></td><td>提示词明确「没有 rubric / 答案 / 分数，不要猜 grader 想要什么」；<span class="mono">RunView</span> 不携带分数；判分在选择之后</td><td>最终「好不好」仍是一个模型判断</td></tr>
+        <tr><td><b>绊线</b></td><td>7 个 grader 标记（<span class="mono">pass_rate</span> 等）出现在证据里 → 抛错，不静默</td><td>只防显式泄漏，不防模型自己推断</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><p><b>最小加固</b>：把「行为对照」结构化——数值类产物做数值 diff，文本类做关键字段 diff，而不是全靠模型读轨迹。验收信号：同一改动在两个独立 judge 下结论一致率上升。</p></div>
+
+    <h3 id="s7-2">7.2 单任务过拟合：怎么知道这不是只对这一个任务有效</h3>
+    <p class="q">为修一个任务把 harness 魔改一通，下一个任务换题型，改动全成累赘。这是 RSI 最经典的翻车方式。</p>
+    <table class="tbl">
+      <thead><tr><th>机制</th><th>怎么起作用</th><th>代码/提示词位置</th></tr></thead>
+      <tbody>
+        <tr><td><b>基线是分布</b></td><td>k 次同一 harness 的 rollout；只在 1/k 出现的失败是噪声，照着改就是过拟合</td><td class="mono">prompts.aggregate「a defect in 1/k is noise」</td></tr>
+        <tr><td><b>事实 / 过程分层</b></td><td>本任务事实允许写死（标注 in this workspace）；过程必须写成对该领域都成立</td><td class="mono">prompts.GENERALIZE</td></tr>
+        <tr><td><b>不继承树</b></td><td>下一个任务仍从 <span class="mono">adapter.base_harness()</span> 起步；继承的只有库里的经验文本</td><td class="mono">schedule.run_task</td></tr>
+        <tr><td><b>库是假设</b></td><td>抄来的组件必须重新验证它的 workspace 事实；上一个任务的映射不是事实</td><td class="mono">prompts.GENERALIZE + library</td></tr>
+        <tr><td><b>KEEP_BASE</b></td><td>「不改」是一等答案：没有证据支持的适配记为一等失败</td><td class="mono">_KEEP_BASE</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad">
+      <p><b>残留缺口</b>：① 每个候选只有 1 次 rollout，n=1 的判断本质是「单样本对照」；② k=1 时「重复失败」信号不存在（1/1 全是噪声），只剩可追溯性；③ 循环内没有留出任务回灌，过拟合只能靠事后评测发现。</p>
+    </div>
+    <div class="callout"><p><b>最小加固</b>：对 top-1 候选（或全部候选）做 n=2 重复 probe，只有两次都复现的行为差异才允许写进终版；把 <span class="mono">--split-file</span> 的 test 集固定为「只评估、不进库」。验收：train 增益与 test 增益的差距缩小。</p></div>
+
+    <h3 id="s7-3">7.3 通用性：跨任务还能用吗</h3>
+    <table class="tbl">
+      <thead><tr><th>设计</th><th>作用</th><th>边界</th></tr></thead>
+      <tbody>
+        <tr><td><b>INV / DOM 分维</b></td><td>「怎么工作」与「行业知识」分开提，合成时是合并而不是折中</td><td>两个维度都可能被写成任务特定</td></tr>
+        <tr><td><b>领域库</b></td><td>检索按 domain 物理隔离，只给同领域历史</td><td>领域内部也可能高度异质</td></tr>
+        <tr><td><b>cue 写法</b></td><td>要求写「情境的形状」，不是任务事实；太泛/太窄都被点名反对</td><td>没有下游验收，cue 质量靠模型</td></tr>
+        <tr><td><b>留出评估</b></td><td><span class="mono">scripts/split_tasks.py</span> 做领域分层切分（默认 train 0.5）</td><td>测度，不是运行时保证</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><p><b>残留缺口</b>：运行时没有任何「换一个任务还成立吗」的检查；跨领域迁移也没有专门实验。所谓通用性，一半靠设计（分层），一半靠评测（留出集）。</p></div>
+    <div class="callout"><p><b>最小加固</b>：入库时要求 cue 至少能映射到 2 个不同任务形态（让模型自证并记录）；在 library 增加「被后续任务引用/命中」计数。验收：同域新任务的首轮增益；跨域使用时性能不下降。</p></div>
+
+    <h3 id="s7-4">7.4 有效性：怎么证明真的更好，而不是运气</h3>
+    <table class="tbl">
+      <thead><tr><th>层</th><th>机制</th><th>它排除的可能</th></tr></thead>
+      <tbody>
+        <tr><td>改动是否改变行为</td><td>每个候选 probe 1 次，同任务、同模型</td><td>「只是改写了措辞」</td></tr>
+        <tr><td>改完是否更好</td><td>盲选：匿名候选、只给产物、隐藏 harness/run</td><td>「因为它是改进版所以更好」</td></tr>
+        <tr><td>改动是否该进终版</td><td>合成器逐条 merge/drop，证据权重：重复失败 &gt; 单次；下行风险与上行同权；非交付=UNSAFE</td><td>「把没用的改动洗进终版」</td></tr>
+        <tr><td>整体是否真的涨</td><td>判分后置、base/refined 同参、未评分≠0</td><td>「用分数优化分数」</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad">
+      <p><b>残留缺口</b>：n=1 的候选、单次判分、选择者与改进者同源、k=1 时根本没有跨候选比较（选择池只有一个终版）。「有效」在样本量上是<strong>弱结论</strong>，这也是论文用 k 增大来补的原因。</p>
+    </div>
+    <div class="callout"><p><b>最小加固</b>：① 选择者换成不同模型；② 在池中额外放一个匿名基线产物，用来测「改了是否真的比不改好」（当前设计刻意不放，代价是失去这个对照）；③ 判分做两 judge 交叉。验收：采纳后回滚率下降；与独立 judge 的一致率上升。</p></div>
+
+    <h3 id="s7-5">7.5 修改膨胀：怎么保证不会越改越大</h3>
+    <table class="tbl">
+      <thead><tr><th>机制</th><th>怎么限</th><th>强度</th></tr></thead>
+      <tbody>
+        <tr><td>always-on 硬上限</td><td>OpenCode 24,000 / Codex 8,000 字符；超限即校验失败</td><td><span class="chip ok">硬</span></td></tr>
+        <tr><td>触发词税</td><td>每个新 skill 的名字必须出现在常驻文本里（否则校验报错）</td><td><span class="chip ok">硬</span></td></tr>
+        <tr><td>形态歧视</td><td>skill &gt; script &gt; subagent &gt; plugin/hook &gt; 常驻散文；加常驻要「一进一出」</td><td><span class="chip warn">提示词</span></td></tr>
+        <tr><td>可变小</td><td><span class="mono">KEEP_BASE</span>、drop/revise、串行模式可还原更早 checkpoint</td><td><span class="chip warn">提示词</span></td></tr>
+        <tr><td>每任务一条 lesson</td><td>经验库每任务最多 1 条，逼取舍</td><td><span class="chip ok">硬</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad">
+      <p><b>残留缺口（最该补的一处）</b>：脚本、技能正文、插件、库条目<strong>都没有体积/数量上限</strong>。一个提案可以在一次编辑里加 20 个 skill；没被引用的脚本允许存在；库随任务数线性增长；而改进者读的上下文要装整棵树 + 整库，<b>不截断</b>——膨胀的代价最终以 token 和时间的形式出现，而不是被拦住。</p>
+    </div>
+    <div class="callout"><p><b>最小加固</b>：在 <span class="mono">BenchmarkAdapter.validate_tree</span> 里加三条基准专属上限：树总字节数、单次提案新增文件数、脚本/技能数量；库加容量与 TTL。验收：每任务树体积的中位数与 P95；常驻文本占 token 比例。</p></div>
+
+    <h3 id="s7-6">7.6 学习信号：哪些是好的，哪些是坏的</h3>
+    <table class="tbl">
+      <thead><tr><th>类型</th><th>信号</th><th>为什么</th></tr></thead>
+      <tbody>
+        <tr><td><span class="chip ok">好</span></td><td>同一任务多次运行之间的<b>分歧</b></td><td>能力已存在，只是没被告知——最便宜的收益</td></tr>
+        <tr><td><span class="chip ok">好</span></td><td>基线上<b>反复出现</b>的具体失败</td><td>是 harness 的真实属性，不是采样噪声</td></tr>
+        <tr><td><span class="chip ok">好</span></td><td>轨迹里可见、尚未爆发的<b>风险</b></td><td>预防性改动，代价低</td></tr>
+        <tr><td><span class="chip ok">好</span></td><td>已核实的 <b>workspace 事实</b></td><td>基线花代价才发现的，写进去直接省掉最难一步</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td>只在 <b>1/k</b> 出现的失败</td><td>噪声；照着改就是过拟合</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td>单个候选的<b>一次</b>好/坏</td><td>弱证据，不能定因果</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td>「看起来是好实践」</td><td>没有可点名的瞬间，等于猜测</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td>多个候选<b>意见一致</b></td><td>共同模型偏置，不是独立验证</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td><b>被采纳</b>这件事本身</td><td>选择比的是产物，不是改动</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td>关联 rollout <b>什么都没产出</b></td><td>判 UNSAFE，除非其余证据压倒性</td></tr>
+        <tr><td><span class="chip bad">坏</span></td><td>一次改多个组件、无执行隔离</td><td>只能判 <span class="mono">confounded</span>，不许编因果</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><p><b>残留缺口</b>：信号的分级全部由模型在执行时判断，没有量化强度，也没有「这条 helped 到底多可信」的数值。edits 表是文本，不可聚合。</p></div>
+    <div class="callout"><p><b>最小加固</b>：edits 表加结构化字段 <span class="mono">signal_type</span>（divergence/repeat/risk/fact）与 <span class="mono">count</span>；<span class="mono">helped</span> 只有在「可隔离 + n≥2」时才允许写；其余一律 confounded。验收：edits 表的可聚合率；helped 的事后复查一致率。</p></div>
+
+    <h3 id="s7-7">7.7 越权与「往代码里加工具」</h3>
+    <p class="q">改进者会不会改框架代码、改评测、往执行环境里塞可执行文件？——前两个不会，第三个<strong>正是它的工作方式</strong>。</p>
+    <table class="tbl">
+      <thead><tr><th>能改</th><th>不能改</th></tr></thead>
+      <tbody>
+        <tr><td>八组件树内的文本、技能、脚本、子代理、插件/hooks</td><td><span class="mono">harness2/**</span> 框架代码、任务数据、评测器、rubric</td></tr>
+        <tr><td>新增 <span class="mono">scripts/*.py</span>（真 Python，会被 solver 调用）</td><td>基线 harness、其他任务的库条目（只读参考）</td></tr>
+        <tr><td>新增 <span class="mono">plugin/*.ts</span> / <span class="mono">.codex/hooks.json</span>（工具循环内执行）</td><td>越界路径：写了 → 整棵提案作废并重试</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <p><b>强制手段</b>：路径正则白名单、<span class="mono">normalize_rel</span> 防逃逸、保留脚本（<span class="mono">read_doc.py</span> 等）不可覆盖、Python 必须编译、引用必须存在、hooks schema 必须是 <span class="mono">type=command</span>、提案失败整棵拒绝、OpenCode 通道外部目录全 deny。</p>
+    </div>
+    <div class="callout bad">
+      <p><b>残留缺口</b>：<b>没有内容审查</b>——没有 AST 扫描、没有 import 白名单、没有「这段脚本能不能读 <span class="mono">~/.ssh</span>」的检查；插件与 hooks 是任意代码；Claude CLI 通道以 <span class="mono">--dangerously-skip-permissions</span> 运行且没有硬沙箱（只靠提示词约束与 harvest 路径）。</p>
+    </div>
+    <div class="callout"><p><b>最小加固</b>：① 在 <span class="mono">validate_tree</span> 里对 <span class="mono">scripts/</span> 做 import 白名单；② hooks 默认禁用或要求人工审批；③ 高风险基准把提案会话放进容器、只挂载证据目录。验收：每次 run 产出「可执行文件清单」；未审代码零执行。</p></div>
+
+    <h3 id="s7-8">7.8 评测泄漏与自我偏好</h3>
+    <table class="tbl">
+      <thead><tr><th>风险</th><th>现有机制</th><th>够不够</th></tr></thead>
+      <tbody>
+        <tr><td>答案键进上下文</td><td><span class="mono">leak_globs</span> 在 evidence / harness / library 拷贝前三处检查</td><td><span class="chip ok">够</span></td></tr>
+        <tr><td>grader 输出进上下文</td><td>7 个 marker 的文件名/内容绊线；harness 树也扫</td><td><span class="chip ok">够</span></td></tr>
+        <tr><td>改进者知道哪个是基线</td><td>选择匿名、只给产物；基线不在池</td><td><span class="chip warn">部分</span></td></tr>
+        <tr><td>执行器联网找 rubric</td><td><b>没有限制</b>；README 实测有 rollout 自己下 rubric</td><td><span class="chip bad">不够</span></td></tr>
+        <tr><td>同源模型自我偏好</td><td>改进/选择/判分可同模型；无交叉验证</td><td><span class="chip bad">不够</span></td></tr>
+        <tr><td>同域库泄漏到 test 集</td><td>库按 domain 分组，train/test 同域时会互相看见</td><td><span class="chip bad">不够</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><p><b>最小加固</b>：执行器 egress 白名单（huggingface/github 全禁，README 已给清单）；judge 用独立模型；test 集运行时清空库或只读 train 库；报告里强制记录网络限制与 judge 模型。验收：泄漏扫描为空、网络阻断可复现、judge 交叉一致性。</p></div>
+
+    <h3 id="s7-9">7.9 成本与复现</h3>
+    <div class="two-col">
+      <div>
+        <p><b>已经做到的</b>：预算恒等式 R=4k/P=3k 断言；指纹缓存（证据或路径变化即失效）；原子写 summary + flock；namespace 含 bench/substrate/mode/k/seed/tag；续跑校验产物与 harness 指纹；审计五件套（mission/system/response/meta/workspace）。</p>
+      </div>
+      <div>
+        <p><b>还没做到的</b>：选择与反思不计入 R/P（真实成本更高）；上下文体积随树与库增长（没有 token 预算）；demo 无计价，无法校准单价；失败重跑可能重复计费（虽然缓存能挡一部分）。</p>
+      </div>
+    </div>
+    <div class="callout"><p><b>最小加固</b>：把选择/反思纳入账本（作为 <span class="mono">session</span>）；对每次调用记录 token 数并设上限；对「证据树总字节」加预算。验收：预算对账差值；单任务 token 分布。</p></div>
+
+    <h3 id="s7-10">7.10 安全与沙箱</h3>
+    <table class="tbl">
+      <thead><tr><th>面</th><th>现状</th><th>意味着什么</th></tr></thead>
+      <tbody>
+        <tr><td>Codex 求解器</td><td><span class="mono">--dangerously-bypass-approvals-and-sandbox</span> + <span class="mono">--dangerously-bypass-hook-trust</span></td><td>沙箱与 hook 信任都为「可优化」让路；hooks 会执行</td></tr>
+        <tr><td>网络</td><td>执行器不限制</td><td>公开 rubric 可被下载（README 实测）</td></tr>
+        <tr><td>新增代码</td><td>scripts / plugins / hooks 随执行器权限运行</td><td>等于往执行环境部署任意代码</td></tr>
+        <tr><td>提案会话</td><td>OpenCode：外部目录 deny；Claude CLI：skip-permissions</td><td>隔离强度取决于通道</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad"><p><b>结论</b>：当前是<strong>内容与路径边界</strong>，不是 OS 级安全边界。把它当研究工具，在受控主机上跑；不要在多租户环境直接暴露。</p></div>
+    <div class="callout"><p><b>最小加固</b>：容器内执行 + 只读挂载证据 + egress 白名单 + hooks 命令审核；把「无沙箱」写进运行说明（README 已有一条，但产品界面也应显示）。验收：逃逸测试；网络阻断；每次 run 的权限清单。</p></div>
+  </section>
+
+  <!-- ══════════════════ 8 ══════════════════ -->
+  <section class="doc-sec" id="s8">
+    <h2 class="sec"><span class="num">8</span>术语表</h2>
+    <table class="tbl">
+      <thead><tr><th>术语</th><th>定义</th><th>容易混淆的点</th></tr></thead>
+      <tbody>
+        <tr><td><b>harness</b></td><td>模型之外让它成为 agent 的系统：提示词、工具、记忆、技能、编排</td><td>不是模型本身，也不是权重</td></tr>
+        <tr><td><b>RSI</b></td><td>Recursive Self-Improvement，递归自我改进</td><td>这里指 harness 层，不是权重层</td></tr>
+        <tr><td><b>任务级递归</b></td><td>在当前任务上做 Propose–Probe–Compose</td><td>不跨任务继承树</td></tr>
+        <tr><td><b>harnessing 级递归</b></td><td>任务后反思，把可迁移经验写进领域库</td><td>传的是经验，不是 harness</td></tr>
+        <tr><td><b>c1–c8</b></td><td>八个可编辑组件</td><td>路径随执行器不同；缺的组件（如 DSH/Hermes 的子代理）不可编辑</td></tr>
+        <tr><td><b>INV / DOM</b></td><td>不变式维度 / 领域维度</td><td>不是「简单/困难」</td></tr>
+        <tr><td><b>stage</b></td><td>一次提案+校验+采纳（标签 inv1/dom1/agg1/c1…）</td><td>不是一次 rollout</td></tr>
+        <tr><td><b>label</b></td><td>阶段或 rollout 的名字；同时是 run_id 的后缀</td><td>同一 label 在不同任务下不冲突</td></tr>
+        <tr><td><b>rollout</b></td><td>一次真实执行（求解器跑任务）</td><td>与「编辑会话」是两类计费单位</td></tr>
+        <tr><td><b>final</b></td><td>被合成的终版（agg1..k / c1..k）</td><td>只有 final 进选择池</td></tr>
+        <tr><td><b>盲选</b></td><td>匿名、只看产物的选择</td><td>不是按分数选</td></tr>
+        <tr><td><b>cue / lesson</b></td><td>情境形状 / 对哪个组件做什么操作</td><td>太泛或太窄都不合格</td></tr>
+        <tr><td><b>answer-free</b></td><td>主动排除 rubric、答案、分数信号</td><td>不等于「没有判分」</td></tr>
+        <tr><td><b>绊线</b></td><td>发现泄漏就抛错的检查（grader markers / leak_globs）</td><td>不是告警，是硬失败</td></tr>
+        <tr><td><b>指纹</b></td><td>sha256（调用内容 + 证据路径与字节）[:16]</td><td>路径参与，所以两模式不互相命中</td></tr>
+        <tr><td><b>namespace</b></td><td><span class="mono">&lt;bench&gt;-&lt;substrate&gt;-&lt;mode&gt;&lt;k&gt;[-s&lt;seed&gt;][-&lt;tag&gt;]</span></td><td>决定 run 目录与缓存身份</td></tr>
+        <tr><td><b>substrate</b></td><td>执行器（oc / cx）</td><td>与 proposer 通道独立</td></tr>
+        <tr><td><b>install mode</b></td><td>树投递进执行器的方式（4 种）</td><td>换一种就换基线</td></tr>
+        <tr><td><b>留出集</b></td><td>不参与改进、只用于评估的任务切分</td><td>当前只在评测时使用</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════════════ 9 ══════════════════ -->
+  <section class="doc-sec" id="s9">
+    <h2 class="sec"><span class="num">9</span>常见问题</h2>
+
+    <h3>Q1 · 它真的是「第一个 RSI 的 harness 框架」吗？</h3>
+    <p>仓库没有这句话。README 的自我描述是 <span class="mono">recursive agent harnessing</span>；「Harness 层的 RSI」「第一个」来自论文/媒体。同期 Video-RSI、PluginRSI、metaRSI 等都在做相邻的事。<b>结论：把它当「把 RSI 挪到 harness 层并跑通专业基准」的工作，不要当首创声明。</b></p>
+
+    <h3>Q2 · 它会改我的框架代码，或者往代码里加工具吗？</h3>
+    <p>框架代码、评测器、任务数据、rubric 都不会（不在白名单，写了整棵提案作废）。但<strong>它会往 harness 里加可执行文件</strong>：<span class="mono">scripts/*.py</span>、<span class="mono">plugin/*.ts</span>、<span class="mono">.codex/hooks.json</span>——这正是「加工具」的实现方式。且没有内容审查（§7.7）。</p>
+
+    <h3>Q3 · 为什么 k=1 也要 8 次调用？</h3>
+    <p>4 次 rollout（1 基线 + 2 候选 + 1 终版）+ 3 次编辑会话（INV/DOM/合成）+ 1 次反思 = 8。选择会话在 k=1 时被跳过（只有一个终版，没有可比较的候选）。</p>
+
+    <h3>Q4 · 库里存了完整 harness，为什么不直接拿来做下一个任务？</h3>
+    <p>那会把上一个任务的过拟合原样搬过去。当前设计是：库只作为证据，下一个任务从 base 起步；要用某个组件，必须复制并重新验证它的事实（§2.7）。</p>
+
+    <h3>Q5 · 为什么判分要放在最后？不能拿分数指导改进吗？</h3>
+    <p>真实工作里没有分数。用分数指导改进会把方法退化成「对着评测器调参」；放在最后是为了让「选择」和「测量」分离，且未评分不会被当成 0（§2.6）。</p>
+
+    <h3>Q6 · 能换模型 / 换执行器吗？</h3>
+    <p>都能。求解模型与改进模型分离配置；执行器 <span class="mono">--substrate oc|cx</span>；换执行器等于换一套可编辑面与基线，结果不可与另一套直接比较。</p>
+
+    <h3>Q7 · 为什么 Codex 跑的时候沙箱是关的？</h3>
+    <p>为了让 hooks 生效、让树里的脚本可执行。<span class="mono">--dangerously-bypass-approvals-and-sandbox</span> 与 <span class="mono">--dangerously-bypass-hook-trust</span> 是当前实现的前提，也是它最大的安全缺口（§7.10）。</p>
+
+    <h3>Q8 · 数据存在哪？需要数据库吗？</h3>
+    <p>不需要。全部是 <span class="mono">runs/</span>、<span class="mono">library/</span> 下的目录与 JSON；一致性靠原子写与 flock。§3.6/3.7 的逻辑表是查询视角，不是物理 schema。</p>
+
+    <h3>Q9 · 为什么不直接把 rubric 给它，让改进更准？</h3>
+    <p>那会让它在真实场景失效——真实场景没有 rubric。answer-free 是方法假设，不是偷懒（§7.1）。</p>
+
+    <h3>Q10 · demo 不调模型，能证明什么？</h3>
+    <p>证明流程、校验、账本、选择、反思、入库都通，以及「行为对照」确实能定位到一行代码。它不证明模型能力，也不产生可比的分数。</p>
+
+    <h3>Q11 · 能加自己的基准吗？</h3>
+    <p>实现 <span class="mono">BenchmarkAdapter</span> 的十余个方法 + 一个 <span class="mono">BenchSpec</span> 值即可（§3.5）。注意：答案键路径必须在 <span class="mono">leak_globs</span> 里声明，产物读取要和判分器一致。</p>
+
+    <h3>Q12 · 为什么预算是 4k / 3k，而不是别的数？</h3>
+    <p>因为一次完整对照实验的最小构成：k 基线 + 2k 候选 + k 终版 = 4k 次 rollout；k INV + k DOM + k 合成 = 3k 次编辑。断言它，是为了让「跑完了」可验证（§2.8）。</p>
+
+    <h3>Q13 · 为什么选择池里没有基线？那怎么知道「改」比「不改」好？</h3>
+    <p>当前约定是「k 个终版里必选一个」，用合成器的 KEEP_BASE 表达「不改」。代价是失去「改 vs 不改」的直接对照——这是 §7.4 指出的缺口，也是加固建议里最值得做的一条。</p>
+
+    <h3>Q14 · 断点续跑会不会重复花钱？</h3>
+    <p>不会重复花同一笔：调用有内容指纹缓存；任务级续跑会校验产物、harness 指纹与 summary 覆盖的模式。但失败重跑、换 seed/换 models 会重新计费。</p>
+
+    <h3>Q15 · 库会不会越积越多？</h3>
+    <p>会。每任务最多一条，但任务多则条目多，且每条带完整树；库没有容量上限（§7.5）。这也是上下文成本的主要来源之一。</p>
+
+    <h3>Q16 · 它到底能提升多少？</h3>
+    <p>README 报告单步增益：WorkBuddy-Bench +11.5、JobBench +4.5、LAB Partial +11.8 个百分点；k 增大继续涨。这些是论文口径，不是本仓库 demo 的读数；复现要严格同参（§5.5）。</p>
+  </section>
+
+  <footer class="doc-foot">
+    <p><b>出处与口径</b>：本文档由 <span class="mono">/home/malizhi/ai/harness2</span> 的代码、<span class="mono">README.md</span>、<span class="mono">docs/</span> 与 <span class="mono">runs/demo</span> 的实际产物整理；数字为 2026-10-23 实测扫描。界面原型的数据来自 demo 运行与标注为「演示」的占位，不代表真实评测结果。</p>
+    <p><b>原型实现说明</b>：<span class="mono">prototype/assets/{base.css,proto.js,sprite.js}</span> 复用同机 <span class="mono">agentflow/.specs/product-design</span> 的工业暗色设计系统（令牌、外壳与交互引擎），仅替换品牌与内容；文档正文样式在同目录 <span class="mono">assets/doc.css</span>。</p>
+    <p><b>许可与免责</b>：Harness² 代码 Apache-2.0；本文档与原型为同仓库文档产物，随仓库分发。上游项目声明「不是官方支持的 Google 产品」；本文件不构成任何 SLA 或安全承诺。</p>
+    <p class="tiny">参考：<a href="../../README.md">README</a> · <a href="../../docs/BENCHMARKS.md">BENCHMARKS</a> · <a href="../../docs/EXPERIMENTS.md">EXPERIMENTS</a> · <a href="../../docs/SETUP.md">SETUP</a> · <a href="https://arxiv.org/abs/2610.14224" target="_blank" rel="noopener">arXiv 2610.14224</a></p>
+  </footer>
+
+  </main>
+</div>
+
+<script>
+// 侧栏当前项高亮（与参考文档同一交互）
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.doc-nav a'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(a){ a.classList.remove('active'); });
+        var t = map[e.target.id];
+        if(t) t.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-64px 0px -70% 0px', threshold: 0 });
+  document.querySelectorAll('section.doc-sec, h3[id]').forEach(function(el){ obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>证据浏览器 · Harness² 原型</title>
+<link rel="stylesheet" href="assets/base.css">
+<script src="assets/sprite.js" defer></script><script src="assets/proto.js" defer></script>
+<style>html,body{background:var(--bg-main);margin:0}.proto{margin:0;border:0;box-shadow:none}
+.demo-badge{position:fixed;top:10px;right:14px;z-index:80}.nowrap{white-space:nowrap}
+</style></head><body>
+<span class="chip warn demo-badge">原型演示态 · 点击可交互 · 非真实系统行为 ·
+<a href="../PRODUCT-DESIGN.html#p4" target="_top" style="color:inherit">回文档</a></span>
+<div class="relbar"><span>同一条演示宇宙：</span>
+<a class="pill" href="workbench.html" target="_self">总览</a>
+<a class="pill" href="run.html" target="_self">任务运行</a>
+<a class="pill" href="pipeline.html" target="_self">流水线</a>
+<a class="pill" href="evidence.html" target="_self">证据</a>
+<a class="pill" href="library.html" target="_self">经验库</a>
+<a class="pill" href="ledger.html" target="_self">预算</a>
+<a class="pill" href="report.html" target="_self">报告</a></div>
+<p class="proto-note"><span class="chip warn">演示数据</span>改进者、选择者、反思者看到的 <span class='mono'>context/</span> 就长这样：左边是树，中间是内容，右边是这套证据的边界。所有内容为演示摘录，真实轨迹更长。</p>
+<div class="proto">
+  <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span>
+    <span class="url">/evidence</span>
+    <a class="open" href="../PRODUCT-DESIGN.html#p4" target="_top">在文档中阅读这一页 ↗</a>
+    <span class="fake">演示数据</span></div>
+  <div class="app"><aside class="app-side"><div class="app-brand"><i>H²</i><span>Harness²</span></div><div class="nav-grp">运行</div><a class="" href="workbench.html" target="_self"><svg class="icon"><use href="#i-grid"/></svg>总览</a><a class="" href="run.html" target="_self"><svg class="icon"><use href="#i-play"/></svg>任务运行</a><a class="" href="pipeline.html" target="_self"><svg class="icon"><use href="#i-branch"/></svg>流水线</a><a class="active" href="evidence.html" target="_self"><svg class="icon"><use href="#i-file"/></svg>证据浏览器</a><div class="nav-grp">洞察</div><a class="" href="library.html" target="_self"><svg class="icon"><use href="#i-book"/></svg>经验库</a><a class="" href="ledger.html" target="_self"><svg class="icon"><use href="#i-chart"/></svg>预算账本</a><a class="" href="report.html" target="_self"><svg class="icon"><use href="#i-check"/></svg>结果报告</a><div class="nav-grp">配置</div><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-gear"/></svg>执行器与模型</a><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-shield"/></svg>安全与网络</a><div class="spacer"></div><a href="#" onclick="return false" data-toast="环境：OpenCode substrate oc · Codex cx 可切换（演示）"><svg class="icon"><use href="#i-radio"/></svg><span class="tiny muted">oc · opencode</span></a></aside>
+    <div class="app-main">
+      <div class="app-top"><span class="crumb">证据 / context/ · ledger-1/agg1</span><span class="right" style="margin-left:auto;display:flex;gap:8px;align-items:center"><span class="chip">只读</span><button class="btn sm" data-toast="已复制证据目录路径（演示）">复制目录</button></span></div>
+      <div class="app-body">
+<div style="display:grid;grid-template-columns:250px minmax(0,1fr) 280px;gap:var(--s3)">
+  <div class="panel" style="padding:var(--s2)">
+    <p class="tiny dim" style="margin:4px 8px 8px;text-transform:uppercase;letter-spacing:.05em">context/ · ledger-1</p>
+    <div class="tree">
+      <div class="tree-row"><b>task.md</b><span class="tiny dim">任务原文</span></div>
+      <div class="tree-row"><b>source/</b><span class="tiny dim">1 文件 · ledger.csv</span></div>
+      <div class="tree-row"><b>rollouts/</b><span class="tiny dim">base1, base2, inv1…</span></div>
+      <div class="tree-row"><b>deliverables/</b><span class="tiny dim">每候选一个目录</span></div>
+      <div class="tree-row" style="background:var(--bg-selected)"><b>harness/</b><span class="tiny dim">正在编辑的树</span></div>
+      <div class="tree-row"><b>library/</b><span class="tiny dim">同领域历史</span></div>
+      <div class="tree-row"><b>pool/</b><span class="tiny dim">候选 + diff + rollout</span></div>
+      <div class="tree-row"><b>decisions/</b><span class="tiny dim">每阶段 notes</span></div>
+    </div>
+    <p class="tiny dim" style="margin:10px 8px 4px">证据是磁盘上的文件；<span class="mono">MISSION.md</span> 只是指针，不装正文。</p>
+  </div>
+
+  <div>
+    <div class="tabs">
+      <span class="tab active">轨迹</span><span class="tab">产物</span><span class="tab">harness 树</span>
+      <span class="tab">候选 diff</span><span class="tab">决策</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <span class="pill mono">base1.md</span><span class="pill mono">agg1.md</span>
+      <span class="tiny dim">完整轨迹，不按 prompt 预算截断</span>
+      <span style="flex:1"></span><span class="chip mono">渲染自执行器原始事件</span>
+    </div>
+    <div class="code" style="margin-top:0"><b>[ACTION]</b> Run scripts/summarize.py on ledger.csv
+<b>[OBSERVATION]</b> Total: 105.25
+<span class="c">…（同一段直到 turn 结束，事件数 21）</span>
+
+<span class="c"># agg1 的轨迹：</span>
+<b>[ACTION]</b> Run scripts/summarize.py on ledger.csv
+<b>[OBSERVATION]</b> Total: 85.15</div>
+    <p class="tiny dim" style="margin:0 0 var(--s4)">观测里的渲染截断标记是<b>我们</b>加的，不是解题者的行为；改进者被告知不要把它误判为失败。</p>
+
+    <div class="panel">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">deliverables/agg1/INDEX.md</p>
+      <pre class="code" style="margin:0"># agg1 produced 1 file(s)
+
+- `answer.txt`  (14 chars extracted)
+
+Each `.txt` is the artifact converted to text by the SAME reader the
+work is assessed through. An artifact that does not survive that
+conversion is treated as unreadable however good it looks.</pre>
+      <p class="tiny dim" style="margin:8px 0 0">为什么同款读取器很重要：判分器读不出来的产物，在证据里也不该显得漂亮。</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel" style="margin-bottom:var(--s3)">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">证据纪律（代码强制）</p>
+      <table class="tbl compact" style="margin:0"><tbody>
+        <tr><td><b>不截断</b></td><td class="tiny">轨迹整份写入；单条观测可按 <span class="mono">obs_trunc</span> 截断</td></tr>
+        <tr><td><b>无分数</b></td><td class="tiny">RunView 不带 score；判分在选择之后</td></tr>
+        <tr><td><b>绊线</b></td><td class="tiny">7 个 grader 标记，出现在文件名或内容 → 抛异常</td></tr>
+        <tr><td><b>答案键</b></td><td class="tiny">leak_globs 命中路径 → 进上下文前拒绝</td></tr>
+        <tr><td><b>同款读取</b></td><td class="tiny">产物用判分器自己的 extractor 渲染</td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">这些<b>不在</b>证据里</p>
+      <ul class="tiny" style="margin:0;padding-left:16px;color:var(--text-secondary);line-height:1.8">
+        <li>rubric / 评分细则 / 参考答案</li>
+        <li>pass_rate、passed_count、判分摘要</li>
+        <li>别的候选的 harness 与 run</li>
+        <li>选择者的身份与选择理由</li>
+      </ul>
+      <p class="tiny dim" style="margin:8px 0 0">改进者看到的只有「做了什么、产出了什么」，看不到「得了几分」。</p>
+    </div>
+  </div>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div><div class="modal-mask" id="modal-mask"></div><div id="toast"></div>
+<p class="tiny dim" style="padding:12px 18px 20px">可点区：页签为静态演示（真实页面按页签切换树/产物/diff）· 复制目录 → toast。要点：证据里没有分数，这是 answer-free 设计的物理体现。</p>
+</body></html>

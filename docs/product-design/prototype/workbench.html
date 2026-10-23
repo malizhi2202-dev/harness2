@@ -1,0 +1,107 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>总览 · Harness² 原型</title>
+<link rel="stylesheet" href="assets/base.css">
+<script src="assets/sprite.js" defer></script><script src="assets/proto.js" defer></script>
+<style>html,body{background:var(--bg-main);margin:0}.proto{margin:0;border:0;box-shadow:none}
+.demo-badge{position:fixed;top:10px;right:14px;z-index:80}.nowrap{white-space:nowrap}
+</style></head><body>
+<span class="chip warn demo-badge">原型演示态 · 点击可交互 · 非真实系统行为 ·
+<a href="../PRODUCT-DESIGN.html#p1" target="_top" style="color:inherit">回文档</a></span>
+<div class="relbar"><span>同一条演示宇宙：</span>
+<a class="pill" href="workbench.html" target="_self">总览</a>
+<a class="pill" href="run.html" target="_self">任务运行</a>
+<a class="pill" href="pipeline.html" target="_self">流水线</a>
+<a class="pill" href="evidence.html" target="_self">证据</a>
+<a class="pill" href="library.html" target="_self">经验库</a>
+<a class="pill" href="ledger.html" target="_self">预算</a>
+<a class="pill" href="report.html" target="_self">报告</a></div>
+<p class="proto-note"><span class="chip warn">演示数据</span>这是「一次 run 的控制台」，不是通用 agent 平台：页面只呈现 harness 递归的证据、预算与采纳结果。所有数字为演示值，唯一真实口径是 run 目录下的 <span class='mono'>summary.json</span>。带 <span class='mono'>*</span> 的 Δ 取自 README 报告口径（绝对分未给，故不显示 base→refined）。</p>
+<div class="proto">
+  <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span>
+    <span class="url">/workbench</span>
+    <a class="open" href="../PRODUCT-DESIGN.html#p1" target="_top">在文档中阅读这一页 ↗</a>
+    <span class="fake">演示数据</span></div>
+  <div class="app"><aside class="app-side"><div class="app-brand"><i>H²</i><span>Harness²</span></div><div class="nav-grp">运行</div><a class="active" href="workbench.html" target="_self"><svg class="icon"><use href="#i-grid"/></svg>总览</a><a class="" href="run.html" target="_self"><svg class="icon"><use href="#i-play"/></svg>任务运行</a><a class="" href="pipeline.html" target="_self"><svg class="icon"><use href="#i-branch"/></svg>流水线</a><a class="" href="evidence.html" target="_self"><svg class="icon"><use href="#i-file"/></svg>证据浏览器</a><div class="nav-grp">洞察</div><a class="" href="library.html" target="_self"><svg class="icon"><use href="#i-book"/></svg>经验库</a><a class="" href="ledger.html" target="_self"><svg class="icon"><use href="#i-chart"/></svg>预算账本</a><a class="" href="report.html" target="_self"><svg class="icon"><use href="#i-check"/></svg>结果报告</a><div class="nav-grp">配置</div><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-gear"/></svg>执行器与模型</a><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-shield"/></svg>安全与网络</a><div class="spacer"></div><a href="#" onclick="return false" data-toast="环境：OpenCode substrate oc · Codex cx 可切换（演示）"><svg class="icon"><use href="#i-radio"/></svg><span class="tiny muted">oc · opencode</span></a></aside>
+    <div class="app-main">
+      <div class="app-top"><span class="crumb">总览 · demo-oc-agg2</span><span class="right" style="margin-left:auto;display:flex;gap:8px;align-items:center"><span class="chip info">agg + seq</span><button class="btn sm" data-toast="已刷新（演示）">刷新</button><button class="btn sm primary" data-toast="新建 run 表单不在本版原型范围（演示）">+ 新建 run</button></span></div>
+      <div class="app-body">
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--s3);margin-bottom:var(--s4)">
+<div class="kpi "><div class="k">本次 run</div><div class="v">demo-oc-agg2</div><div class="s">bench=demo · substrate=oc · agg k=2</div></div>
+<div class="kpi "><div class="k">任务</div><div class="v">6</div><div class="s">2 个 demo 账本 + 4 个基准抽样</div></div>
+<div class="kpi good"><div class="k">采纳（经盲选）</div><div class="v">5 / 6</div><div class="s">1 个任务判分未出</div></div>
+<div class="kpi blue"><div class="k">平均增益</div><div class="v">+8.4</div><div class="s">演示口径 · 见 §7.4</div></div>
+<div class="kpi warn"><div class="k">预算恒等式</div><div class="v">4k / 3k</div><div class="s">每个任务 · 由 ledger 断言</div></div>
+</div>
+
+<div class="two-col" style="grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)">
+  <div>
+    <p class="tiny dim" style="margin:0 0 6px;letter-spacing:.05em;text-transform:uppercase">按领域（library 的检索单位）</p>
+    <table class="tbl compact">
+      <thead><tr><th>基准 / 领域</th><th>任务</th><th>库条目</th><th>最近任务</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td><b>demo</b> / accounting</td><td class="mono">2</td><td class="mono">2</td>
+            <td class="mono">ledger-2 · 10:42</td><td><span class="chip ok">ok</span></td></tr>
+        <tr><td><b>lab</b> / antitrust-competition</td><td class="mono">1</td><td class="mono">1</td>
+            <td class="mono">lab-0042 · 11:05</td><td><span class="chip ok">ok</span></td></tr>
+        <tr><td><b>jb</b> / financial-analyst</td><td class="mono">1</td><td class="mono">1</td>
+            <td class="mono">jb-0117 · 11:31</td><td><span class="chip warn">partial</span></td></tr>
+        <tr><td><b>wb</b> / office</td><td class="mono">1</td><td class="mono">0</td>
+            <td class="mono">wb-0031 · 12:02</td><td><span class="chip ok">ok</span></td></tr>
+        <tr><td><b>wb</b> / web</td><td class="mono">1</td><td class="mono">0</td>
+            <td class="mono">wb-0044 · 12:20</td><td><span class="chip ">no-entry</span></td></tr>
+        <tr><td class="dim">还有 38 个领域未在本 run 抽样</td><td class="mono dim">—</td><td class="mono dim">—</td><td class="dim">—</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <p class="tiny dim" style="margin:var(--s4) 0 6px;letter-spacing:.05em;text-transform:uppercase">最近任务</p>
+    <table class="tbl compact">
+      <thead><tr><th>任务</th><th>模式</th><th>采纳</th><th>对照</th><th>判分</th></tr></thead>
+      <tbody>
+        <tr><td class="mono"><a href="run.html" target="_self">ledger-1</a></td><td>agg · k=2</td><td class="mono">agg1</td>
+            <td class="mono">105.25 → 85.15</td><td><span class="chip ok">scored</span></td></tr>
+        <tr><td class="mono"><a href="run.html" target="_self">ledger-2</a></td><td>seq · k=2</td><td class="mono">c2</td>
+            <td class="mono">35.50 → 20.25</td><td><span class="chip ok">scored</span></td></tr>
+        <tr><td class="mono">lab-0042</td><td>agg · k=2</td><td class="mono">agg2</td>
+            <td class="mono">Δ +11.8pp*</td><td><span class="chip ok">scored</span></td></tr>
+        <tr><td class="mono">jb-0117</td><td>agg · k=2</td><td class="mono">agg1</td>
+            <td class="mono">Δ +4.5*</td><td><span class="chip warn">unscored</span></td></tr>
+        <tr><td class="mono">wb-0031</td><td>agg · k=2</td><td class="mono">agg2</td>
+            <td class="mono">Δ +11.5*</td><td><span class="chip ok">scored</span></td></tr>
+        <tr><td class="mono">wb-0044</td><td>agg · k=2</td><td class="mono">agg1</td>
+            <td class="mono">—</td><td><span class="chip ">queued</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <div class="panel" style="margin-bottom:var(--s3)">
+      <p class="tiny" style="margin:0 0 6px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)">run 身份（决定缓存与可复现）</p>
+      <table class="tbl compact" style="margin:0"><tbody>
+        <tr><td class="muted">namespace</td><td class="mono">demo-oc-agg2</td></tr>
+        <tr><td class="muted">基准 / 执行器</td><td class="mono">demo / oc</td></tr>
+        <tr><td class="muted">模式 / 预算</td><td class="mono">agg · k=2</td></tr>
+        <tr><td class="muted">seed / tag</td><td class="mono">null / —</td></tr>
+        <tr><td class="muted">改进者模型</td><td class="mono">deterministic (demo)</td></tr>
+        <tr><td class="muted">判分模型</td><td class="mono">—</td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel">
+      <p class="tiny" style="margin:0 0 6px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)">事件流（今天的异常）</p>
+      <div class="timeline">
+        <div class="tl-item"><b>09:12</b> inv2 提案被校验拒绝：skill 未在 always-on 中点名 → 自动重试一次 → 通过</div>
+        <div class="tl-item"><b>09:40</b> base2 rollout 死亡（proxy 502）→ 标记 dead，<b>不按 0 分入账</b>，任务重跑</div>
+        <div class="tl-item"><b>10:05</b> judge 429 → 该任务 <span class="mono">unscored</span>，报告里显示「未评分」而非 0</div>
+        <div class="tl-item"><b>11:31</b> jb-0117 判分模型超时 → 仍未评分</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div><div class="modal-mask" id="modal-mask"></div><div id="toast"></div>
+<p class="tiny dim" style="padding:12px 18px 20px">可点区：任务名 → run.html · 左侧导航 → 各页（顶层跳转）· 刷新/新建 → toast。状态语义：ok=该任务所有模式都成功且已采纳；partial=有模式失败或判分未出；no-entry=库里还没有该领域条目。</p>
+</body></html>

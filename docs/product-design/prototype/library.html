@@ -1,0 +1,124 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>经验库 · Harness² 原型</title>
+<link rel="stylesheet" href="assets/base.css">
+<script src="assets/sprite.js" defer></script><script src="assets/proto.js" defer></script>
+<style>html,body{background:var(--bg-main);margin:0}.proto{margin:0;border:0;box-shadow:none}
+.demo-badge{position:fixed;top:10px;right:14px;z-index:80}.nowrap{white-space:nowrap}
+</style></head><body>
+<span class="chip warn demo-badge">原型演示态 · 点击可交互 · 非真实系统行为 ·
+<a href="../PRODUCT-DESIGN.html#p5" target="_top" style="color:inherit">回文档</a></span>
+<div class="relbar"><span>同一条演示宇宙：</span>
+<a class="pill" href="workbench.html" target="_self">总览</a>
+<a class="pill" href="run.html" target="_self">任务运行</a>
+<a class="pill" href="pipeline.html" target="_self">流水线</a>
+<a class="pill" href="evidence.html" target="_self">证据</a>
+<a class="pill" href="library.html" target="_self">经验库</a>
+<a class="pill" href="ledger.html" target="_self">预算</a>
+<a class="pill" href="report.html" target="_self">报告</a></div>
+<p class="proto-note"><span class="chip warn">演示数据</span>条目内容直接来自本仓库 <span class='mono'>runs/demo/library</span>（ledger-1/ledger-2），不是编的。库按 benchmark × mode × k × domain 隔离，跨领域读不到。</p>
+<div class="proto">
+  <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span>
+    <span class="url">/library</span>
+    <a class="open" href="../PRODUCT-DESIGN.html#p5" target="_top">在文档中阅读这一页 ↗</a>
+    <span class="fake">演示数据</span></div>
+  <div class="app"><aside class="app-side"><div class="app-brand"><i>H²</i><span>Harness²</span></div><div class="nav-grp">运行</div><a class="" href="workbench.html" target="_self"><svg class="icon"><use href="#i-grid"/></svg>总览</a><a class="" href="run.html" target="_self"><svg class="icon"><use href="#i-play"/></svg>任务运行</a><a class="" href="pipeline.html" target="_self"><svg class="icon"><use href="#i-branch"/></svg>流水线</a><a class="" href="evidence.html" target="_self"><svg class="icon"><use href="#i-file"/></svg>证据浏览器</a><div class="nav-grp">洞察</div><a class="active" href="library.html" target="_self"><svg class="icon"><use href="#i-book"/></svg>经验库</a><a class="" href="ledger.html" target="_self"><svg class="icon"><use href="#i-chart"/></svg>预算账本</a><a class="" href="report.html" target="_self"><svg class="icon"><use href="#i-check"/></svg>结果报告</a><div class="nav-grp">配置</div><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-gear"/></svg>执行器与模型</a><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-shield"/></svg>安全与网络</a><div class="spacer"></div><a href="#" onclick="return false" data-toast="环境：OpenCode substrate oc · Codex cx 可切换（演示）"><svg class="icon"><use href="#i-radio"/></svg><span class="tiny muted">oc · opencode</span></a></aside>
+    <div class="app-main">
+      <div class="app-top"><span class="crumb">经验库 / demo / k2 / agg / accounting</span><span class="right" style="margin-left:auto;display:flex;gap:8px;align-items:center"><span class="chip ok">2 entries</span><button class="btn sm" data-toast="已重建 INDEX.md（演示）">重建索引</button></span></div>
+      <div class="app-body">
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:var(--s3);flex-wrap:wrap">
+  <span class="pill" style="border-color:var(--blue-border);color:var(--blue)">accounting · 2</span>
+  <span class="pill">antitrust-competition · 1</span>
+  <span class="pill">financial-analyst · 1</span>
+  <span class="pill">office · 0</span>
+  <span style="flex:1"></span>
+  <span class="chip mono">k2 · agg</span>
+  <span class="chip mono">library/demo/k2/agg</span>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:var(--s3)">
+  <div>
+    <div class="panel" style="margin-bottom:var(--s3)">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">INDEX.md（每次 add 后从磁盘重建）</p>
+      <pre class="code" style="margin:0"># Library — accounting
+
+Each entry is an earlier task in THIS domain whose harness was chosen,
+stored with its FULL component tree and why it was picked.
+
+## `harnesses/ledger-1/`
+- harness: `harnesses/ledger-1/harness/` — 1 scripts; 62 always-on chars
+- why:     `harnesses/ledger-1/EXPERIENCE.md`
+- cue:     When a ledger includes credits and debits
+
+## `harnesses/ledger-2/`
+- harness: `harnesses/ledger-2/harness/` — 1 scripts; 62 always-on chars
+- why:     `harnesses/ledger-2/EXPERIENCE.md`
+- cue:     When a ledger includes credits and debits</pre>
+    </div>
+
+    <div class="panel" style="margin-bottom:var(--s3)">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">harnesses/ledger-1/EXPERIENCE.md</p>
+      <pre class="code" style="margin:0"># ledger-1
+
+- adopted: `agg1`  (run `demo-oc-agg2/ledger-1/agg1`)
+- components: 1 scripts; 62 always-on chars
+
+## Why this was chosen
+The signed total matches the source ledger.
+
+## What each edit did
+component: scripts/summarize.py
+candidates: inv1
+change: dropped the positive-only filter from the amount sum
+observed: the probe total included the credits the base run omitted
+verdict: helped
+
+## Transferable lesson
+- **cue**: When a ledger includes credits and debits
+- **lesson**: Include both signs when summing in scripts/summarize.py.
+- **evidence**: The scripts/summarize.py row -- removing the positive-only
+  filter changed the probe total to include the credits omitted by the base
+  trajectory.
+- **confidence**: high for this observed arithmetic contrast</pre>
+    </div>
+
+    <div class="panel">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">空态（office 领域）</p>
+      <p class="small muted" style="margin:0">_(empty — this is the first task in this domain)_</p>
+      <p class="tiny dim" style="margin:6px 0 0">空库不是错误状态：第一个任务本来就没有可读的历史，把空目录塞进上下文只会浪费 token。</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel" style="margin-bottom:var(--s3)">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">入库门槛（代码强制）</p>
+      <table class="tbl compact" style="margin:0"><tbody>
+        <tr><td class="mono">cue</td><td>非空：情境的形状</td></tr>
+        <tr><td class="mono">lesson</td><td>非空：对哪个组件做什么</td></tr>
+        <tr><td class="mono">evidence</td><td>非空：依据哪几行</td></tr>
+        <tr><td class="mono">confidence</td><td>可选，但建议给</td></tr>
+      </tbody></table>
+      <p class="tiny dim" style="margin:8px 0 0">三缺一 → <span class="mono">has_experience()</span> 为假 → 整条不入库，只留 edits 记录。每个任务最多 1 条经验。</p>
+    </div>
+    <div class="panel" style="margin-bottom:var(--s3)">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">怎么用（提示词的硬规矩）</p>
+      <ul class="small" style="margin:0;padding-left:16px;color:var(--text-secondary);line-height:1.8">
+        <li>库里的 harness <b>不是</b>你正在编辑的树：要用就 copy 组件进 <span class="mono">context/harness/</span></li>
+        <li>copy 之后<b>重新验证</b>它的 workspace fact：上一个任务的映射/阈值在这里只是假设</li>
+        <li>只抄组件不抄脚本 → 校验失败（引用的脚本不存在）</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">为什么这不等于「过拟合累积」</p>
+      <p class="small" style="margin:0;color:var(--text-secondary)">下一个任务仍从 base harness 开始（代码写死），库里只传<b>经验文本 + 示例树</b>，不把上次的树直接装上。检索按 domain，跨领域物理隔离。</p>
+    </div>
+  </div>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div><div class="modal-mask" id="modal-mask"></div><div id="toast"></div>
+<p class="tiny dim" style="padding:12px 18px 20px">可点区：领域 pill 为静态演示（真实按目录切换）· 重建索引 → toast。注意：条目存的是「完整被采纳树 + why + 一条可迁移经验」，不是摘要。</p>
+</body></html>

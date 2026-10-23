@@ -1,0 +1,126 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>流水线 · Harness² 原型</title>
+<link rel="stylesheet" href="assets/base.css">
+<script src="assets/sprite.js" defer></script><script src="assets/proto.js" defer></script>
+<style>html,body{background:var(--bg-main);margin:0}.proto{margin:0;border:0;box-shadow:none}
+.demo-badge{position:fixed;top:10px;right:14px;z-index:80}.nowrap{white-space:nowrap}
+</style></head><body>
+<span class="chip warn demo-badge">原型演示态 · 点击可交互 · 非真实系统行为 ·
+<a href="../PRODUCT-DESIGN.html#p3" target="_top" style="color:inherit">回文档</a></span>
+<div class="relbar"><span>同一条演示宇宙：</span>
+<a class="pill" href="workbench.html" target="_self">总览</a>
+<a class="pill" href="run.html" target="_self">任务运行</a>
+<a class="pill" href="pipeline.html" target="_self">流水线</a>
+<a class="pill" href="evidence.html" target="_self">证据</a>
+<a class="pill" href="library.html" target="_self">经验库</a>
+<a class="pill" href="ledger.html" target="_self">预算</a>
+<a class="pill" href="report.html" target="_self">报告</a></div>
+<p class="proto-note"><span class="chip warn">演示数据</span>四列就是一次任务的全部动作：2 个基线、2k 个候选提案、每个候选 1 次 probe、k 个合成终版。点任意候选卡片看它的 diff 与校验结论（抽屉）。</p>
+<div class="proto">
+  <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span>
+    <span class="url">/pipeline</span>
+    <a class="open" href="../PRODUCT-DESIGN.html#p3" target="_top">在文档中阅读这一页 ↗</a>
+    <span class="fake">演示数据</span></div>
+  <div class="app"><aside class="app-side"><div class="app-brand"><i>H²</i><span>Harness²</span></div><div class="nav-grp">运行</div><a class="" href="workbench.html" target="_self"><svg class="icon"><use href="#i-grid"/></svg>总览</a><a class="" href="run.html" target="_self"><svg class="icon"><use href="#i-play"/></svg>任务运行</a><a class="active" href="pipeline.html" target="_self"><svg class="icon"><use href="#i-branch"/></svg>流水线</a><a class="" href="evidence.html" target="_self"><svg class="icon"><use href="#i-file"/></svg>证据浏览器</a><div class="nav-grp">洞察</div><a class="" href="library.html" target="_self"><svg class="icon"><use href="#i-book"/></svg>经验库</a><a class="" href="ledger.html" target="_self"><svg class="icon"><use href="#i-chart"/></svg>预算账本</a><a class="" href="report.html" target="_self"><svg class="icon"><use href="#i-check"/></svg>结果报告</a><div class="nav-grp">配置</div><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-gear"/></svg>执行器与模型</a><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-shield"/></svg>安全与网络</a><div class="spacer"></div><a href="#" onclick="return false" data-toast="环境：OpenCode substrate oc · Codex cx 可切换（演示）"><svg class="icon"><use href="#i-radio"/></svg><span class="tiny muted">oc · opencode</span></a></aside>
+    <div class="app-main">
+      <div class="app-top"><span class="crumb">流水线 / ledger-1 · Propose–Probe–Compose</span><span class="right" style="margin-left:auto;display:flex;gap:8px;align-items:center"><span class="chip info">确定性 demo 编辑者</span><button class="btn sm" data-toast="已导出 pipeline.json（演示）">导出</button></span></div>
+      <div class="app-body">
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:var(--s3)">
+  <span class="chip info">ledger-1</span> <span class="chip ">agg · k=2</span> <span class="chip ">4 次候选 rollout + 2 次合成</span>
+  <span style="flex:1"></span>
+  <span class="chip mono">编辑契约：省略即继承</span>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s3)">
+  <div>
+    <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">① Base · k=2</p>
+    <div class="layer"><b class="mono" style="font-size:12px">base1</b><span class="chip ok">rollout</span>
+      <div class="tiny mono" style="margin-top:5px">Total: 105.25</div>
+      <div class="tiny muted">与 base2 同错 → 真问题</div></div>
+    <div class="layer"><b class="mono" style="font-size:12px">base2</b><span class="chip ok">rollout</span>
+      <div class="tiny mono" style="margin-top:5px">Total: 105.25</div>
+      <div class="tiny muted">同一分布的第二个样本</div></div>
+    <div class="note tiny" style="margin-top:8px;padding:8px;border-left:2px solid var(--border-strong)">
+      基线不是 1 个样本：k 次重复让「2/2 都错」和「1/2 偶发」在证据上可分。</div>
+  </div>
+
+  <div>
+    <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">② Propose · 2k=4</p>
+    <div class="layer" style="margin-bottom:8px;cursor:pointer" data-drawer="dw-cand"><div style="display:flex;justify-content:space-between;align-items:center"><b class="mono" style="font-size:12px">inv1</b><span class="chip ok">validated</span></div><div class="tiny muted" style="margin-top:3px">INV：去掉正数过滤（符号修复）</div><div class="tiny mono" style="margin-top:5px;color:var(--text-muted)">±1 line · scripts/summarize.py</div></div>
+    <div class="layer" style="margin-bottom:8px;cursor:pointer" data-drawer="dw-cand"><div style="display:flex;justify-content:space-between;align-items:center"><b class="mono" style="font-size:12px">dom1</b><span class="chip ok">validated</span></div><div class="tiny muted" style="margin-top:3px">DOM：账本符号约定（借贷同列）</div><div class="tiny mono" style="margin-top:5px;color:var(--text-muted)">+6 lines · guardrails.md</div></div>
+    <div class="layer" style="margin-bottom:8px;cursor:pointer" data-drawer="dw-cand"><div style="display:flex;justify-content:space-between;align-items:center"><b class="mono" style="font-size:12px">inv2</b><span class="chip warn">rejected → retry</span></div><div class="tiny muted" style="margin-top:3px">INV：加校验脚本（首次未绑定触发词）</div><div class="tiny mono" style="margin-top:5px;color:var(--text-muted)">+1 file · scripts/check_totals.py</div></div>
+    <div class="layer" style="margin-bottom:8px;cursor:pointer" data-drawer="dw-cand"><div style="display:flex;justify-content:space-between;align-items:center"><b class="mono" style="font-size:12px">dom2</b><span class="chip ">validated</span></div><div class="tiny muted" style="margin-top:3px">DOM：CSV 空行与千分位</div><div class="tiny mono" style="margin-top:5px;color:var(--text-muted)">+4 lines · LongTermMEMORY.md</div></div>
+  </div>
+
+  <div>
+    <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">③ Probe · 每个候选真跑 1 次</p>
+    <div class="layer"><b class="mono" style="font-size:12px">inv1</b><span class="chip ok">85.15</span>
+      <div class="tiny muted">行为差异：贷方进入总额</div></div>
+    <div class="layer"><b class="mono" style="font-size:12px">dom1</b><span class="chip ok">85.15</span>
+      <div class="tiny muted">同向；无独立增量</div></div>
+    <div class="layer"><b class="mono" style="font-size:12px">inv2</b><span class="chip warn">85.15</span>
+      <div class="tiny muted">重试后通过；校验脚本让失败可见</div></div>
+    <div class="layer"><b class="mono" style="font-size:12px">dom2</b><span class="chip bad">105.25</span>
+      <div class="tiny muted">没有改变行为（no observed effect）</div></div>
+    <div class="note tiny" style="margin-top:8px;padding:8px;border-left:2px solid var(--border-strong)">
+      候选只有 1 次 rollout：一次好/坏都是弱证据，必须点名轨迹里的机制。</div>
+  </div>
+
+  <div>
+    <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">④ Compose · k=2</p>
+    <div class="layer" style="border-color:rgba(92,184,120,.4)"><b class="mono" style="font-size:12px">agg1</b><span class="chip ok">adopted</span>
+      <div class="tiny muted">MERGE：inv1 的修复 + inv2 的校验脚本，丢弃 dom1/dom2</div>
+      <div class="tiny mono" style="margin-top:5px">notes: kept|revised|dropped 逐条</div></div>
+    <div class="layer"><b class="mono" style="font-size:12px">agg2</b><span class="chip ">runner-up</span>
+      <div class="tiny muted">ADOPT wholesale：与 agg1 同树</div>
+      <div class="tiny mono" style="margin-top:5px">similarity 1.00 → 多样性告警</div></div>
+    <div class="note tiny" style="margin-top:8px;padding:8px;border-left:2px solid var(--border-strong)">
+      合成器是最后一道闸：不能把被证据否掉的改动「洗」进终版。</div>
+  </div>
+</div>
+
+<div class="callout" style="margin-top:var(--s4)">
+  <p><b>校验器在这一步之前就把废案扔掉了</b>（<span class="mono">tree.validate</span>）。常见三类拒绝原文：</p>
+  <div class="code"><span class="r">skill 'verify_totals' is never named in the always-on text, so the agent will
+not know to invoke it — an untriggered skill is dead weight.</span>
+<span class="r">systemprompt.md invokes `scripts/check_totals.py` but that file is not in the harness</span>
+<span class="r">always-on content is 24,180 chars, over the 24,000 cap; every token here
+competes with the agent's own output budget</span></div>
+  <p class="tiny dim">被拒 → 反馈原文原样回灌 → 重试一次（<span class="mono">STAGE_ATTEMPTS=2</span>）→ 仍失败则回退到当前 harness 并记 <span class="mono">fell_back</span>。越界文件不是静默丢弃，而是整棵提案作废。</p>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="dw-cand">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--s3)">
+    <b>候选 inv1</b><span class="chip ok">validated</span>
+    <span style="margin-left:auto"><button class="btn sm" data-close>关闭</button></span>
+  </div>
+  <p class="tiny dim" style="margin:0 0 8px">证据：base1/base2 的轨迹 + 产物 + 当前 harness。提案只输出改动文件。</p>
+  <pre class="code" style="margin:0 0 var(--s3)">--- current/scripts/summarize.py
++++ inv1/scripts/summarize.py
+@@ -4,4 +4,4 @@
+ with open(sys.argv[1]) as source:
+     amounts = [Decimal(row['amount']) for row in csv.DictReader(source)]
+-total = sum((amount for amount in amounts if amount &gt; 0), Decimal(0))
++total = sum((amount for amount in amounts), Decimal(0))
+ print(f'Total: {total:.2f}')</pre>
+  <p class="tiny dim" style="margin:0 0 4px">notes（进 decisions/，供合成器与反思读）</p>
+  <pre class="code" style="margin:0 0 var(--s3)">&lt;notes&gt;Keep signed amounts: the base total omitted
+credits in the source ledger.&lt;/notes&gt;</pre>
+  <p class="tiny dim" style="margin:0 0 4px">校验结论</p>
+  <table class="tbl compact"><tbody>
+    <tr><td>路径白名单</td><td><span class="chip ok">pass</span></td></tr>
+    <tr><td>Python 编译</td><td><span class="chip ok">pass</span></td></tr>
+    <tr><td>脚本引用存在</td><td><span class="chip ok">pass</span></td></tr>
+    <tr><td>always-on 预算</td><td><span class="chip ok">62 chars / 24,000</span></td></tr>
+    <tr><td>grader 标记</td><td><span class="chip ok">none</span></td></tr>
+  </tbody></table>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div><div class="modal-mask" id="modal-mask"></div><div id="toast"></div>
+<p class="tiny dim" style="padding:12px 18px 20px">可点区：候选卡片 → 右侧抽屉（diff / notes / 校验五项）· 导出 → toast。真实运行里列宽不固定：并行模式 2k 个候选并发，串行模式每轮只有 2 个候选 + 1 个 checkpoint。</p>
+</body></html>

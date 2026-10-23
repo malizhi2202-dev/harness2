@@ -1,0 +1,98 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>预算账本 · Harness² 原型</title>
+<link rel="stylesheet" href="assets/base.css">
+<script src="assets/sprite.js" defer></script><script src="assets/proto.js" defer></script>
+<style>html,body{background:var(--bg-main);margin:0}.proto{margin:0;border:0;box-shadow:none}
+.demo-badge{position:fixed;top:10px;right:14px;z-index:80}.nowrap{white-space:nowrap}
+</style></head><body>
+<span class="chip warn demo-badge">原型演示态 · 点击可交互 · 非真实系统行为 ·
+<a href="../PRODUCT-DESIGN.html#p6" target="_top" style="color:inherit">回文档</a></span>
+<div class="relbar"><span>同一条演示宇宙：</span>
+<a class="pill" href="workbench.html" target="_self">总览</a>
+<a class="pill" href="run.html" target="_self">任务运行</a>
+<a class="pill" href="pipeline.html" target="_self">流水线</a>
+<a class="pill" href="evidence.html" target="_self">证据</a>
+<a class="pill" href="library.html" target="_self">经验库</a>
+<a class="pill" href="ledger.html" target="_self">预算</a>
+<a class="pill" href="report.html" target="_self">报告</a></div>
+<p class="proto-note"><span class="chip warn">演示数据</span>账本回答一个问题：这次实验到底跑了几次、花了多少、有没有偷工。R/P 是断言值，不是页面统计；demo 无计价所以 usd 全 0。</p>
+<div class="proto">
+  <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span>
+    <span class="url">/ledger</span>
+    <a class="open" href="../PRODUCT-DESIGN.html#p6" target="_top">在文档中阅读这一页 ↗</a>
+    <span class="fake">演示数据</span></div>
+  <div class="app"><aside class="app-side"><div class="app-brand"><i>H²</i><span>Harness²</span></div><div class="nav-grp">运行</div><a class="" href="workbench.html" target="_self"><svg class="icon"><use href="#i-grid"/></svg>总览</a><a class="" href="run.html" target="_self"><svg class="icon"><use href="#i-play"/></svg>任务运行</a><a class="" href="pipeline.html" target="_self"><svg class="icon"><use href="#i-branch"/></svg>流水线</a><a class="" href="evidence.html" target="_self"><svg class="icon"><use href="#i-file"/></svg>证据浏览器</a><div class="nav-grp">洞察</div><a class="" href="library.html" target="_self"><svg class="icon"><use href="#i-book"/></svg>经验库</a><a class="active" href="ledger.html" target="_self"><svg class="icon"><use href="#i-chart"/></svg>预算账本</a><a class="" href="report.html" target="_self"><svg class="icon"><use href="#i-check"/></svg>结果报告</a><div class="nav-grp">配置</div><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-gear"/></svg>执行器与模型</a><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-shield"/></svg>安全与网络</a><div class="spacer"></div><a href="#" onclick="return false" data-toast="环境：OpenCode substrate oc · Codex cx 可切换（演示）"><svg class="icon"><use href="#i-radio"/></svg><span class="tiny muted">oc · opencode</span></a></aside>
+    <div class="app-main">
+      <div class="app-top"><span class="crumb">预算 / demo-oc-agg2 / ledger-1</span><span class="right" style="margin-left:auto;display:flex;gap:8px;align-items:center"><span class="chip ok">identity ok</span><button class="btn sm" data-toast="已导出 ledger.json（演示）">导出</button></span></div>
+      <div class="app-body">
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--s3);margin-bottom:var(--s4)">
+<div class="kpi good"><div class="k">R（rollouts）</div><div class="v">8 / 8</div><div class="s">k=2 → 4k</div></div>
+<div class="kpi good"><div class="k">P（编辑会话）</div><div class="v">6 / 6</div><div class="s">k=2 → 3k</div></div>
+<div class="kpi "><div class="k">session attempts</div><div class="v">6</div><div class="s">重试单列计数</div></div>
+<div class="kpi "><div class="k">缓存命中</div><div class="v">0</div><div class="s">命中则 usd=0</div></div>
+<div class="kpi blue"><div class="k">usd</div><div class="v">$0.00</div><div class="s">demo 无计价</div></div>
+</div>
+
+<div class="two-col">
+<div>
+  <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">账本明细（summary.json.modes.agg.ledger；同类行合并展示）</p>
+  <table class="tbl compact">
+    <thead><tr><th>kind</th><th>label</th><th>attempts</th><th>cached</th><th>usd</th></tr></thead>
+    <tbody>
+      <tr><td>rollout</td><td class="mono">base1</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>rollout</td><td class="mono">base2</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>session</td><td class="mono">inv1</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>session</td><td class="mono">dom1</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>session</td><td class="mono">inv2</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>session</td><td class="mono">dom2</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>rollout</td><td class="mono">inv1 · dom1 · inv2 · dom2</td><td class="mono">4</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>rollout</td><td class="mono">agg1</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>rollout</td><td class="mono">agg2</td><td class="mono">1</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+      <tr><td>session</td><td class="mono">agg1 · agg2</td><td class="mono">2</td><td class="mono">no</td><td class="mono">0.00</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <p><b>断言，不是估算</b>：<span class="mono">ledger.assert_identity()</span> 要求恰好 R=4k、P=3k，label 不能重复；对不上就抛 <span class="mono">BudgetError</span>，任务失败而不是「大概跑完了」。</p>
+  </div>
+</div>
+
+<div>
+  <div class="panel" style="margin-bottom:var(--s3)">
+    <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">规模换算（每个任务）</p>
+    <table class="tbl compact" style="margin:0">
+      <thead><tr><th>k</th><th>rollouts</th><th>sessions</th><th>+选择</th><th>+反思</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td class="mono">4</td><td class="mono">3</td><td class="mono">0</td><td class="mono">1</td></tr>
+        <tr><td class="mono">2</td><td class="mono">8</td><td class="mono">6</td><td class="mono">1</td><td class="mono">1</td></tr>
+        <tr><td class="mono">3</td><td class="mono">12</td><td class="mono">9</td><td class="mono">1</td><td class="mono">1</td></tr>
+        <tr><td class="mono">4</td><td class="mono">16</td><td class="mono">12</td><td class="mono">1</td><td class="mono">1</td></tr>
+      </tbody>
+    </table>
+    <p class="tiny dim" style="margin:8px 0 0">选择与反思按会话计费、<b>不在</b>账本 R/P 里。k=1 无选择会话（只有一个终版）。</p>
+  </div>
+  <div class="panel" style="margin-bottom:var(--s3)">
+    <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">缓存指纹</p>
+    <pre class="code" style="margin:0">sha256(label, mission, system,
+       context 路径 + 每个文件的相对路径与字节)[:16]</pre>
+    <p class="tiny dim" style="margin:8px 0 0">证据或路径任一变化 → 指纹变 → 不命中。命中时 <span class="mono">usd=0</span>、<span class="mono">cached=yes</span>，账本仍记一条 session，但 <span class="mono">attempts=0</span>（没有真实调用）。</p>
+  </div>
+  <div class="panel">
+    <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">钱花在哪</p>
+    <table class="tbl compact" style="margin:0"><tbody>
+      <tr><td>基线 rollout</td><td class="mono">k 次</td><td class="tiny">不可避免</td></tr>
+      <tr><td>候选 rollout</td><td class="mono">2k 次</td><td class="tiny">probe 的代价</td></tr>
+      <tr><td>终版 rollout</td><td class="mono">k 次</td><td class="tiny">盲选的输入</td></tr>
+      <tr><td>编辑会话</td><td class="mono">3k 次</td><td class="tiny">最贵的一段</td></tr>
+    </tbody></table>
+  </div>
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div><div class="modal-mask" id="modal-mask"></div><div id="toast"></div>
+<p class="tiny dim" style="padding:12px 18px 20px">可点区：导出 → toast。真实读数：<span class='mono'>summary.json → modes.{agg,seq}.ledger</span>；R=4k 与 P=3k 对不上会在运行时就失败。</p>
+</body></html>

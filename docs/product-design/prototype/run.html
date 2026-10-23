@@ -1,0 +1,139 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>任务运行 · Harness² 原型</title>
+<link rel="stylesheet" href="assets/base.css">
+<script src="assets/sprite.js" defer></script><script src="assets/proto.js" defer></script>
+<style>html,body{background:var(--bg-main);margin:0}.proto{margin:0;border:0;box-shadow:none}
+.demo-badge{position:fixed;top:10px;right:14px;z-index:80}.nowrap{white-space:nowrap}
+</style></head><body>
+<span class="chip warn demo-badge">原型演示态 · 点击可交互 · 非真实系统行为 ·
+<a href="../PRODUCT-DESIGN.html#p2" target="_top" style="color:inherit">回文档</a></span>
+<div class="relbar"><span>同一条演示宇宙：</span>
+<a class="pill" href="workbench.html" target="_self">总览</a>
+<a class="pill" href="run.html" target="_self">任务运行</a>
+<a class="pill" href="pipeline.html" target="_self">流水线</a>
+<a class="pill" href="evidence.html" target="_self">证据</a>
+<a class="pill" href="library.html" target="_self">经验库</a>
+<a class="pill" href="ledger.html" target="_self">预算</a>
+<a class="pill" href="report.html" target="_self">报告</a></div>
+<p class="proto-note"><span class="chip warn">演示数据</span>真实数据来自本仓库 <span class='mono'>runs/demo</span> 的 demo 运行：ledger-1 基线把贷记漏掉（105.25），修复后为 85.15。演示里把 demo 的确定性结果与三个基准的抽样混排，真实 run 不会混。</p>
+<div class="proto">
+  <div class="proto-bar"><span class="dots"><i></i><i></i><i></i></span>
+    <span class="url">/run</span>
+    <a class="open" href="../PRODUCT-DESIGN.html#p2" target="_top">在文档中阅读这一页 ↗</a>
+    <span class="fake">演示数据</span></div>
+  <div class="app"><aside class="app-side"><div class="app-brand"><i>H²</i><span>Harness²</span></div><div class="nav-grp">运行</div><a class="" href="workbench.html" target="_self"><svg class="icon"><use href="#i-grid"/></svg>总览</a><a class="active" href="run.html" target="_self"><svg class="icon"><use href="#i-play"/></svg>任务运行</a><a class="" href="pipeline.html" target="_self"><svg class="icon"><use href="#i-branch"/></svg>流水线</a><a class="" href="evidence.html" target="_self"><svg class="icon"><use href="#i-file"/></svg>证据浏览器</a><div class="nav-grp">洞察</div><a class="" href="library.html" target="_self"><svg class="icon"><use href="#i-book"/></svg>经验库</a><a class="" href="ledger.html" target="_self"><svg class="icon"><use href="#i-chart"/></svg>预算账本</a><a class="" href="report.html" target="_self"><svg class="icon"><use href="#i-check"/></svg>结果报告</a><div class="nav-grp">配置</div><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-gear"/></svg>执行器与模型</a><a href="#" onclick="return false" data-toast="设置页不在本版原型范围（演示）"><svg class="icon"><use href="#i-shield"/></svg>安全与网络</a><div class="spacer"></div><a href="#" onclick="return false" data-toast="环境：OpenCode substrate oc · Codex cx 可切换（演示）"><svg class="icon"><use href="#i-radio"/></svg><span class="tiny muted">oc · opencode</span></a></aside>
+    <div class="app-main">
+      <div class="app-top"><span class="crumb">运行 / ledger-1 · agg · k=2</span><span class="right" style="margin-left:auto;display:flex;gap:8px;align-items:center"><span class="chip ok">status ok</span><button class="btn sm" data-toast="已复制复现命令（演示）">复制复现命令</button><button class="btn sm primary" data-toast="重跑会复用缓存指纹，不重复计费（演示）">重跑</button></span></div>
+      <div class="app-body">
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:var(--s3)">
+  <span class="chip info">task ledger-1</span> <span class="chip ">domain accounting</span> <span class="chip info">mode agg</span>
+  <span class="chip ">k=2</span> <span class="chip ok">status ok</span>
+  <span style="flex:1"></span>
+  <a class="btn sm" href="pipeline.html" target="_self">看流水线</a>
+  <a class="btn sm" href="evidence.html" target="_self">看证据</a>
+  <a class="btn sm" href="report.html" target="_self">看报告</a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--s3);margin-bottom:var(--s4)">
+<div class="kpi good"><div class="k">rollouts</div><div class="v">8 / 8</div><div class="s">R = 4k</div></div>
+<div class="kpi good"><div class="k">编辑会话</div><div class="v">6 / 6</div><div class="s">P = 3k</div></div>
+<div class="kpi "><div class="k">候选 → 终版</div><div class="v">4 → 2</div><div class="s">inv/dom 各 2</div></div>
+<div class="kpi warn"><div class="k">候选多样性</div><div class="v">1.00</div><div class="s">2 个终版同树</div></div>
+<div class="kpi "><div class="k">harness</div><div class="v">851f13…9138</div><div class="s">指纹 16 位</div></div>
+<div class="kpi "><div class="k">花费</div><div class="v">$0.00</div><div class="s">demo 无计价</div></div>
+</div>
+
+<div class="two-col" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)">
+<div>
+  <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">① 基线（同一分布，k 次）</p>
+  <table class="tbl compact">
+    <thead><tr><th>label</th><th>产物</th><th>是否交付</th><th>轨迹</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">base1</td><td class="mono">Total: 105.25</td><td><span class="chip ok">delivered</span></td>
+          <td class="mono tiny">context/rollouts/base1.md</td></tr>
+      <tr><td class="mono">base2</td><td class="mono">Total: 105.25</td><td><span class="chip ok">delivered</span></td>
+          <td class="mono tiny">context/rollouts/base2.md</td></tr>
+      <tr><td class="dim">期望值（源 CSV 手算）</td><td class="mono">85.15</td>
+          <td><span class="chip bad">不一致 2/2</span></td><td class="tiny dim">重复失败 = 真问题，不是噪声</td></tr>
+    </tbody>
+  </table>
+
+  <p class="tiny dim" style="margin:var(--s4) 0 6px;text-transform:uppercase;letter-spacing:.05em">② 阶段（每行是一棵被采纳的树）</p>
+  <table class="tbl compact">
+    <thead><tr><th>label</th><th>维度</th><th>attempts</th><th>cached</th><th>决策笔记</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">inv1</td><td><span class="chip info">INV</span></td><td class="mono">1</td><td class="mono">no</td>
+          <td class="small">Keep signed amounts: the base total omitted credits in the source ledger.</td></tr>
+      <tr><td class="mono">dom1</td><td><span class="chip ">DOM</span></td><td class="mono">1</td><td class="mono">no</td>
+          <td class="small">同上（本条为演示：与 inv1 同向，未产生新信息）</td></tr>
+      <tr><td class="mono">inv2</td><td><span class="chip info">INV</span></td><td class="mono">1</td><td class="mono">no</td>
+          <td class="small">同上</td></tr>
+      <tr><td class="mono">dom2</td><td><span class="chip ">DOM</span></td><td class="mono">1</td><td class="mono">no</td>
+          <td class="small">同上</td></tr>
+      <tr><td class="mono">agg1</td><td><span class="chip ok">AGG</span></td><td class="mono">1</td><td class="mono">no</td>
+          <td class="small">Merge：保留 inv1 的符号修复，丢弃重复表述。</td></tr>
+      <tr><td class="mono">agg2</td><td><span class="chip ok">AGG</span></td><td class="mono">1</td><td class="mono">no</td>
+          <td class="small">Adopt wholesale：与 agg1 同树（多样性 1.00 的原因）。</td></tr>
+    </tbody>
+  </table>
+
+  <p class="tiny dim" style="margin:var(--s4) 0 6px;text-transform:uppercase;letter-spacing:.05em">③ 盲选（只看产物，不看 harness）</p>
+  <table class="tbl compact">
+    <thead><tr><th>匿名 id</th><th>真实 label</th><th>产物</th><th>结果</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">A</td><td class="mono">agg1</td><td class="mono">Total: 85.15</td><td><span class="chip ok">chosen</span></td></tr>
+      <tr><td class="mono">B</td><td class="mono">agg2</td><td class="mono">Total: 85.15</td><td><span class="chip ">runner-up</span></td></tr>
+    </tbody>
+  </table>
+  <div class="note" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card)">
+    <b>why：</b>“The signed total matches the source ledger.”　
+    <span class="tiny dim">选择者拿不到 harness、拿不到 run、也拿不到基线是哪一个；k=1 时这一步直接跳过。</span>
+  </div>
+</div>
+
+<div>
+  <div class="panel" style="margin-bottom:var(--s3)">
+    <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">④ 反思：改动归因</p>
+    <table class="tbl compact" style="margin:0">
+      <tbody>
+        <tr><td class="mono">scripts/summarize.py</td><td><span class="chip ok">helped</span></td></tr>
+        <tr><td class="small">去掉 <span class="mono">if amount &gt; 0</span>，probe 总分包含了基线漏掉的贷方</td><td></td></tr>
+        <tr><td class="mono">inv1</td><td><span class="chip info">evidence</span></td></tr>
+      </tbody></table>
+    <div class="note tiny" style="margin-top:8px;padding:8px;border-left:2px solid var(--border-strong)">
+      <b>cue</b>：When a ledger includes credits and debits<br>
+      <b>lesson</b>：Include both signs when summing in <span class="mono">scripts/summarize.py</span>.<br>
+      <b>confidence</b>：high for this observed arithmetic contrast
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:var(--s3)">
+    <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">同一任务的 seq 模式（对照）</p>
+    <table class="tbl compact" style="margin:0"><tbody>
+      <tr><td class="mono">c1</td><td><span class="chip ok">chosen</span></td><td class="mono tiny">Total: 85.15</td></tr>
+      <tr><td class="mono">c2</td><td><span class="chip ">kept_base</span></td><td class="mono tiny">未改动 checkpoint</td></tr>
+      <tr><td class="mono">inv2 / dom2</td><td><span class="chip ">kept_base</span></td><td class="mono tiny">第 2 轮无新证据 → KEEP_BASE</td></tr>
+    </tbody></table>
+    <p class="tiny dim" style="margin:8px 0 0">seq 的第 2 轮什么都没改——这正是「没有证据支持的适配就是回归」在运行时的样子。</p>
+  </div>
+
+  <div class="panel">
+    <p class="tiny" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">⑤ 失败与回退（演示）</p>
+    <table class="tbl compact" style="margin:0"><tbody>
+      <tr><td><span class="chip warn">validator</span></td><td class="small">skill 未点名 → 整棵拒 → 重试 1 次</td></tr>
+      <tr><td><span class="chip bad">dead rollout</span></td><td class="small">proxy 502 → 记 dead，不按 0 分</td></tr>
+      <tr><td><span class="chip warn">judge 429</span></td><td class="small">unscored，报告不写 0</td></tr>
+      <tr><td><span class="chip ">selector</span></td><td class="small">选择失败 → 回退到已交付的基线产物</td></tr>
+    </tbody></table>
+  </div>
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-mask" id="drawer-mask"></div><div class="modal-mask" id="modal-mask"></div><div id="toast"></div>
+<p class="tiny dim" style="padding:12px 18px 20px">可点区：流水线/证据/报告按钮 → 对应页面 · 复制复现命令 → toast · 重跑 → toast。口径：R=4k 与 P=3k 是断言，不是估算；cached=yes 表示命中指纹、花费为 0。</p>
+</body></html>
