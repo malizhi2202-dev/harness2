@@ -1,0 +1,28 @@
+# ── generated run state (never commit) ─────────────────────────────
+runs/
+.logs/
+*.log
+
+# ── local secrets / environment ────────────────────────────────────
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# ── Python build and tool caches ───────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ── editor / OS noise ──────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
