@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harness² 技术详解</title>
+  <meta name="description" content="沿 Harness² 当前代码逐步解释系统架构、递归算法、Stage、证据、经验库、适配器、状态和安全边界。">
+  <style>
+    :root{color-scheme:light;--ink:#142d4d;--muted:#586d85;--line:#d7e3f0;--blue:#1769c2;--pale:#f3f8fd;--green:#08794f}
+    *{box-sizing:border-box}body{margin:0;background:#f6f9fc;color:var(--ink);font:16px/1.62 Inter,"Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+    main{max-width:1120px;margin:auto;padding:34px 24px 64px}.top{display:flex;gap:24px;align-items:center;justify-content:space-between;margin-bottom:22px}
+    .eyebrow{font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.08em;text-transform:uppercase}h1{font-size:38px;line-height:1.2;margin:5px 0 10px}h2{font-size:23px;margin:0 0 12px}p{margin:8px 0;color:var(--muted)}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+    .links{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;font-weight:650}.hero{background:white;border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 8px 28px #173b620c}
+    .hero img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:14px;margin-top:18px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0}
+    article{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;min-height:190px}article .num{font-size:12px;font-weight:800;color:var(--green);letter-spacing:.08em}article h2{margin-top:7px}article ul{margin:10px 0 0;padding-left:20px;color:var(--muted);font-size:14px}
+    .callout{background:#edf5ff;border-left:4px solid var(--blue);padding:15px 18px;border-radius:8px;margin:20px 0;color:#294967}.footer{border-top:1px solid var(--line);padding-top:18px;font-size:14px;color:var(--muted)}
+    @media(max-width:740px){main{padding:22px 14px 42px}.top{display:block}h1{font-size:31px}.grid{grid-template-columns:1fr}article{min-height:0}.hero{padding:16px}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><div class="eyebrow">Code reading guide · Harness²</div><h1>技术详解</h1>
+      <p>面向实现本身的分篇说明：算法怎么走、代码在哪、为什么这样设计、当前边界是什么。</p></div>
+    <nav class="links"><a href="../PRODUCT-DESIGN.html">产品设计 HTML</a><a href="../PROJECT-DOC.md">项目速览 Markdown</a><a href="../../SUBSTRATES.md">Substrate 接入说明</a></nav>
+  </header>
+  <section class="hero">
+    <h2>先看真实运行结构</h2>
+    <p>图中区分任务内的并行/串行递归，最终盲选与反思入库，以及经验如何成为后续任务的参考证据。经验库不会自动覆盖新任务的基准 harness。</p>
+    <img src="../architecture.svg" alt="Harness² 双层递归架构图">
+  </section>
+  <div class="callout"><b>阅读口径：</b>文档描述当前仓库实现。预算 R/P 按每个递归模式核算；两个模式共享物理基线。`RunView.ok` 代表执行可用，`delivered` 代表 benchmark 认可交付物，不能混为一谈。</div>
+  <section class="grid" aria-label="技术专题">
+    <article><div class="num">01 · STRUCTURE</div><h2><a href="01-architecture.md">系统架构与代码边界</a></h2><p>从 CLI 入口到 schedule、recursion、adapter、substrate 和独立 judge/report。</p><ul><li>方法、基准、执行器、模型通道四个轴</li><li>调用图、依赖边界、并发位置</li></ul></article>
+    <article><div class="num">02 · ALGORITHM</div><h2><a href="02-recursion-algorithms.md">任务递归算法</a></h2><p>逐步解释 agg 的宽探和 seq 的 checkpoint 递进。</p><ul><li>每阶段输入、候选数、rollout 数</li><li>k=1、失败回退和预算口径</li></ul></article>
+    <article><div class="num">03 · STAGE</div><h2><a href="03-stage-context-proposer.md">Stage、证据与提案会话</a></h2><p>跟进一次提案从 context.build 到 proposer、harvest、校验和 rollout。</p><ul><li>缓存指纹与重试层级</li><li>SurfaceSpec 白名单和 validator</li></ul></article>
+    <article><div class="num">04 · LEARNING</div><h2><a href="04-selection-reflection-library.md">盲选、反思与经验库</a></h2><p>说明 finals-only 候选池、匿名化、experience 字段门槛与跨任务读取。</p><ul><li>选择失败的真实回退</li><li>经验前向传播和隔离</li></ul></article>
+    <article><div class="num">05 · PLUGINS</div><h2><a href="05-adapters-substrates-channels.md">Benchmark、Substrate 与 Channel</a></h2><p>说明任务 adapter、solver runtime 和模型会话通道的职责边界。</p><ul><li>各接口分别回答什么问题</li><li>新增 benchmark/runtime 要实现什么</li></ul></article>
+    <article><div class="num">06 · STATE</div><h2><a href="06-state-budget-resume.md">文件状态、预算与续跑</a></h2><p>理解目录、namespace、账本、原子 summary 更新和完成标记。</p><ul><li>两类指纹与两类缓存</li><li>resume 的逐项校验</li></ul></article>
+    <article><div class="num">07 · BOUNDARIES</div><h2><a href="07-evidence-security.md">证据隔离与安全边界</a></h2><p>哪些机制减少 grader 泄漏，哪些执行风险仍由运行环境负责。</p><ul><li>leak globs、verdict markers、匿名候选</li><li>内容检查与 OS sandbox 的区别</li></ul></article>
+    <article><div class="num">08 · OPERATIONS</div><h2><a href="08-cli-runbook.md">CLI 与完整运行流程</a></h2><p>从预检、dry-run 到 sweep、judge 和 report 的命令和数据检查。</p><ul><li>参数如何改变实验身份</li><li>常见故障定位入口</li></ul></article>
+    <article><div class="num">09 · SURFACE</div><h2><a href="09-harness-surface.md">Harness 可编辑面</a></h2><p>展开 c1–c8 路径映射、SurfaceSpec 白名单、autotrigger 和树校验。</p><ul><li>省略即继承的编辑契约</li><li>结构校验和执行安全边界</li></ul></article>
+  </section>
+  <footer class="footer">源代码入口：<code>harness2/core/</code> · <code>harness2/substrate/</code> · <code>harness2/benchmarks/</code> · <code>harness2/cli/</code></footer>
+</main>
+</body>
+</html>

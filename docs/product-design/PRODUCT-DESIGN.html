@@ -56,6 +56,7 @@
     <a href="#s3-5">3.5 接口一览</a>
     <a href="#s3-6">3.6 数据模型</a>
     <a href="#s3-7">3.7 ER 图</a>
+    <a href="technical/index.html">技术详解专题（9 篇）</a>
     <p class="grp">时序与流程</p>
     <a href="#s4">4 · 核心时序</a>
     <a href="#s4-1">4.1 一次任务（agg）</a>
@@ -249,7 +250,7 @@
     <p class="q">本章回答：八个组件是什么、两层递归如何咬合、证据如何进入模型、预算为什么是 4k/3k。</p>
 
     <h3 id="s2-1">2.1 Harness 与 c1–c8</h3>
-    <p class="lead">harness = 模型之外让它成为 agent 的那层系统。<b>Harness² 只把这一层当作优化对象</b>，并把它的可编辑部分切成 8 个组件（代码里叫 c1..c8，实际是两个 <span class="mono">SurfaceSpec</span> 的值）。</p>
+    <p class="lead"><b>Harness（智能体运行框架）</b>是模型之外让它成为 agent 的那层系统。<b>Harness² 只把这一层当作优化对象</b>，并把它的可编辑部分切成 8 个组件（代码里叫 c1..c8，实际由 <span class="mono">SurfaceSpec</span> 描述）。</p>
     <table class="tbl">
       <thead><tr><th>#</th><th>组件</th><th>OpenCode 路径</th><th>Codex 路径</th><th>何时进上下文</th></tr></thead>
       <tbody>
@@ -271,11 +272,11 @@
     <h3 id="s2-2">2.2 两级递归</h3>
     <div class="two-col">
       <div>
-        <p><b>任务级递归（内层）</b>：在<em>当前任务</em>上做对照实验。基线 k 次 → 提案 2k 个 → 每个候选 probe 1 次 → 合成 k 个终版 → 盲选 1 个。</p>
+        <p><b>任务级递归（内层）</b>：在<em>当前任务</em>上做对照实验。基线 k 次 → 先生成 2k 个候选（k 个 INV + k 个 DOM）→ 统一对候选各 probe 1 次 → k 个合成会话各自产生终版 → 对终版各跑 1 次 → 盲选 1 个。</p>
         <p class="small" style="color:var(--text-secondary)">它回答：「这个任务上，改哪里能让行为变好？」</p>
       </div>
       <div>
-        <p><b>Harnessing 级递归（外层）</b>：任务结束后，用<em>完整记录</em>（所有候选的树、轨迹、产物、决策笔记）diff 出「哪条改动起了作用」，写成一条可迁移经验，存进该领域的库。</p>
+        <p><b>Harnessing 级递归（经验层）</b>：任务结束后，用<em>完整记录</em>（所有候选的树、轨迹、产物、决策笔记）复盘改动与观察结果，尝试写出可迁移经验并存入领域库；它不是把结论当作普遍因果证明。</p>
         <p class="small" style="color:var(--text-secondary)">它回答：「下次遇到同类任务，应该先想到什么？」</p>
       </div>
     </div>
@@ -295,13 +296,15 @@
     </div>
 
     <h3 id="s2-3">2.3 Propose–Probe–Compose</h3>
+    <p class="lead"><b>中文：提案—试跑—合成。</b>每个名词对应代码中的一个阶段；提案的顺序和并发边界很重要：并行模式会等 2k 个提案阶段完成，再开始这一批候选 rollout。</p>
     <div class="chain">
-      <div class="node"><b>① Propose</b><span class="tiny muted">k 个 INV + k 个 DOM，各自独立采样</span></div>
+      <div class="node"><b>① Propose（提案）</b><span class="tiny muted">k 个 INV + k 个 DOM；均基于共享基线证据</span></div>
       <span class="arrow">→</span>
-      <div class="node"><b>② Probe</b><span class="tiny muted">每个候选在同一任务上真跑 1 次</span></div>
+      <div class="node"><b>② Probe（候选试跑）</b><span class="tiny muted">全部提案收集/校验后，每个候选真跑 1 次</span></div>
       <span class="arrow">→</span>
-      <div class="node"><b>③ Compose</b><span class="tiny muted">k 个合成器看全量证据，各产出一个终版</span></div>
+      <div class="node"><b>③ Compose（证据合成）</b><span class="tiny muted">k 个独立会话看全量候选与试跑证据，各产出终版</span></div>
     </div>
+    <div class="callout"><p><b>真实调用边界：</b><span class="mono">run_parallel</span> 先建 2k 个提案 stage，再批量 rollout 2k 个候选；随后并发运行 k 个合成 stage，最后批量 rollout k 个终版。每个阶段失败会用输入树作为该 stage 的结果继续跑；这与选择失败回退是不同分支。</p></div>
     <table class="tbl">
       <thead><tr><th>维度</th><th>管什么</th><th>典型改动</th></tr></thead>
       <tbody>
@@ -374,7 +377,7 @@
         <tr><td>候选池</td><td>仅 finals</td><td>agg1..aggk 或 c1..ck；基线<b>不入池</b>，因此没有「不选」这个选项</td></tr>
         <tr><td>k=1</td><td>trivial selection</td><td>只有一个终版 → 不开选择会话（省一次调用）</td></tr>
         <tr><td>非交付物</td><td>先丢</td><td>没产物 / 渲染失败 / 空内容 → <span class="mono">dropped</span></td></tr>
-        <tr><td>选择失败</td><td>回退</td><td>finals-only 池里没有基线可退：退到排序第一个 final，并记 <span class="mono">fallback</span>（mixed 池才可能退基线）</td></tr>
+        <tr><td>选择失败</td><td>回退</td><td>finals-only 池里没有基线可退：退到排序第一个 final，并记 <span class="mono">fallback</span></td></tr>
         <tr><td>判分</td><td>之后</td><td>选择提交后才判分；判分失败 = <span class="mono">unscored</span>，不当 0</td></tr>
       </tbody>
     </table>
@@ -489,8 +492,8 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
             <div class="row"><span class="pill">基准 launcher</span><span class="pill">opencode / codex exec</span><span class="pill">容器(WB)</span><span class="pill">逐 run_id 幂等</span></div>
           </div>
           <div class="layer">
-            <h5>③c 判分</h5>
-            <div class="row"><span class="pill">基准 judge</span><span class="pill">仅在采纳之后</span><span class="pill">失败=unscored</span></div>
+            <h5>③c 后置判分（独立 CLI）</h5>
+            <div class="row"><span class="pill">harness2-judge 单独启动</span><span class="pill">采纳之后按需运行</span><span class="pill">失败=unscored</span></div>
           </div>
         </div>
         <div class="arrow-v">↓ <small>文件读写（唯一的状态通道）</small></div>
@@ -507,8 +510,13 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
       </div>
     </div>
     <div class="callout">
-      <p><b>并发模型</b>：<span class="mono">--workers N</span> 只并行<strong>不同领域</strong>；同一领域内任务严格串行（保证库的顺序与可复现）。任务内部，2k 个候选的提案与 rollout 用线程池并发（<span class="mono">PHASE_WIDTH=2</span>），完成后再按固定顺序记账——并发不改变账本序列。</p>
+      <p><b>并发模型</b>：<span class="mono">--workers N</span> 只并行<strong>不同领域</strong>；同一领域内任务严格串行（保证库的顺序与可复现）。任务内部，提案阶段和 rollout 阶段各自用线程池并发（<span class="mono">PHASE_WIDTH=2</span>），两批之间有阶段边界；完成后按固定顺序记账。</p>
     </div>
+
+    <figure class="diagram" style="margin-top:18px">
+      <img src="architecture.svg" alt="Harness² 双层递归架构：并行和串行任务级递归、终版盲选、反思经验库及后续任务读取经验作为参考" style="display:block;width:100%;height:auto;border-radius:14px">
+      <figcaption><b>按实际实现绘制的双层递归架构图</b>：经验库保存采纳树和反思记录；后续任务只将其作为证据参考，仍从 base harness 起步。</figcaption>
+    </figure>
 
     <h3 id="s3-2">3.2 模块架构图</h3>
     <div class="diagram">
@@ -519,7 +527,7 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
       <div class="layer brand"><h5>方法层 · core/（14 文件 / 5,688 行）</h5>
         <div class="row"><span class="pill mono">schedule</span><span class="pill mono">recursion</span><span class="pill mono">context</span><span class="pill mono">proposer</span><span class="pill mono">selection</span><span class="pill mono">library</span><span class="pill mono">prompts</span><span class="pill mono">tree</span><span class="pill mono">spec</span><span class="pill mono">ledger</span><span class="pill mono">judge</span><span class="pill mono">report</span><span class="pill mono">runmark</span></div>
       </div>
-      <div class="arrow-v">↓ <small>只依赖 Protocol（Adapter / Substrate），不 import 任何 benchmark</small></div>
+      <div class="arrow-v">↓ <small>run_sweep 注入 BenchmarkAdapter；core 只面向接口，具体 adapter 再调用 substrate / launcher</small></div>
       <div class="grid g2" style="gap:var(--s2)">
         <div class="layer"><h5>执行器层 · substrate/（7 文件 / 1,911 行）</h5>
           <div class="row"><span class="pill mono">base</span><span class="pill mono">opencode</span><span class="pill mono">codex</span><span class="pill mono">manifest</span><span class="pill mono">registry</span><span class="pill mono">host</span></div>
@@ -542,12 +550,15 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
      │   └─ schedule.run_task
      │       ├─ schedule._resume ── runmark.fingerprint
      │       ├─ recursion.run_mode
-     │       │   ├─ context.build ── tree.* / spec.RunView
-     │       │   ├─ proposer.call ── audit + cache
-     │       │   └─ selection_pool
-     │       ├─ selection.run_selection ── context.build
-     │       └─ selection.reflect_adoption ── library.add
-     └─ core.judge (仅按需)</div>
+     │       │   ├─ context.build → evidence files / mission
+     │       │   ├─ proposer.call → channel subprocess / audit cache
+     │       │   ├─ tree.read_tree / validate_tree
+     │       │   └─ adapter.execute → substrate → benchmark launcher
+     │       ├─ selection_pool → selection.run_selection
+     │       ├─ reflect_adoption → library.add (if eligible)
+     │       └─ merge summary (flock + atomic replace)
+     ├─ cli/judge → core.judge (separate command, optional)
+     └─ cli/report → core.report (read existing records)</div>
       </div>
       <div>
         <p class="tiny dim" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">三条不可逆的依赖方向</p>
@@ -589,7 +600,7 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
         <tr><td class="mono">context.py</td><td>把证据写成目录树；mission 指针；泄漏与 verdict 绊线</td><td>轨迹不按 prompt 截断；产物用判分器同款渲染</td></tr>
         <tr><td class="mono">tree.py</td><td>c1..c8 的读/写/校验/diff/多样性</td><td>白名单、编译、frontmatter、触发词、引用、hooks schema</td></tr>
         <tr><td class="mono">proposer.py</td><td>改进者会话：subprocess、超时重试、harvest、审计、指纹缓存</td><td>空回复不算成功；harvest 只取指定子路径</td></tr>
-        <tr><td class="mono">selection.py</td><td>候选清洗、匿名、盲选、回退、反思与经验提炼</td><td>finals-only；失败回退基线；经验三字段门槛</td></tr>
+        <tr><td class="mono">selection.py</td><td>候选清洗、匿名、盲选、回退、反思与经验提炼</td><td>finals-only；选择失败回退排序后的第一个 final；经验三字段门槛</td></tr>
         <tr><td class="mono">library.py</td><td>领域经验库：入库、索引重建、检索、保留/遗忘</td><td>按 domain 物理隔离；INDEX 从磁盘重建</td></tr>
         <tr><td class="mono">prompts.py</td><td>全部作业文本（INV/DOM/合成/选择/反思）+ 执行器面描述</td><td>基准文本以值注入，不做分支；answer-free 措辞集中</td></tr>
         <tr><td class="mono">ledger.py</td><td>预算记账与恒等式断言</td><td>R/P 精确匹配，label 不重复</td></tr>
@@ -604,6 +615,10 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
     </table>
     <div class="callout">
       <p><b>规模事实</b>：43 个 Python 模块 / 14,142 行；core 5,897 行（41%），benchmarks 4,419 行（31%），substrate 1,925 行（14%），cli 1,121 行（8%）。测试 2 文件 / 650 行（<span class="mono">tests/test_workflow.py</span>、<span class="mono">tests/test_substrates.py</span>）——这是研究框架，不是生产服务，测试覆盖仍是缺口。</p>
+    </div>
+    <div class="callout">
+      <p><b>沿代码读一次主链：</b><span class="mono">cli/run_sweep.py</span> 解析参数并构造 adapter / proposer → <span class="mono">schedule.run_task</span> 检查续跑、执行共享基线 → <span class="mono">recursion.run_parallel|run_sequential</span> 调度提案与 rollout → <span class="mono">context.build</span> 组织磁盘证据，<span class="mono">proposer.call</span> 启动改进会话，<span class="mono">tree.read_tree/validate_tree</span> 收集并验证候选 → adapter 经 substrate 启动求解 rollout → <span class="mono">selection.run_selection</span> 匿名选择 → <span class="mono">reflect_adoption</span> 反思并按条件写入 <span class="mono">library.add</span> → summary 合并落盘。判分由 <span class="mono">harness2-judge</span> 后续独立启动。</p>
+      <p style="margin-top:6px"><b>模块中文释义：</b>schedule=调度与续跑；recursion=递归阶段编排；context=证据目录构建；proposer=模型会话与提案回收；tree=候选树管理和校验；selection=终版盲选与反思；library=经验准入和检索；ledger=预算核账；substrate=执行器适配层；benchmark adapter=基准任务与产物适配层。</p>
     </div>
 
     <h3 id="s3-5">3.5 接口一览</h3>
@@ -883,17 +898,18 @@ executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/  <span class="c"># 求解器�
           <tr><td class="msg" colspan="2"><span class="label"><span class="n">①</span><b>读 base harness</b> + 解析任务流 + 恢复判断</span><span class="arrow"></span></td><td></td><td></td><td></td><td></td></tr>
           <tr><td class="note">若 <span class="mono">summary.json</span> 已 ok 且产物/harness 指纹一致 → 直接 skip</td><td></td><td class="note">k 次基线 rollout（同 harness）</td><td></td><td></td><td></td></tr>
           <tr><td class="note">建证据树 <span class="mono">context/&lt;label&gt;/</span>：task、source、rollouts、deliverables、library</td><td></td><td class="note">返回 run_dir；delivered 由 adapter 判</td><td></td><td></td><td></td></tr>
-          <tr><td></td><td class="msg" colspan="2"><span class="label"><span class="n">②</span><b>2k 个提案并发</b>（每个是独立会话，只能看到证据与自己那份 harness）</span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td class="msg" colspan="2"><span class="label"><span class="n">②</span><b>先完成 2k 个提案会话</b>（INV/DOM；stage 内并发，每个独立读证据与输入 harness）</span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
           <tr><td></td><td class="note">编辑 <span class="mono">context/harness/</span>；只写改动文件（省略即继承）</td><td></td><td></td><td></td><td></td></tr>
           <tr><td class="note">harvest 回传 → 读树 → 白名单/校验 → 失败重试 1 次 → 仍失败则回退</td><td class="note">回复 <span class="mono">&lt;notes&gt;</span>：每个改动对应的轨迹瞬间</td><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">③</span><b>每个候选 rollout 1 次</b>（并发，账本按固定顺序记）</span><span class="arrow"></span></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td class="note">产出新轨迹与产物 → 作为 pool 证据</td><td></td><td></td><td></td></tr>
+          <tr><td class="msg" colspan="3"><span class="label"><span class="n">③</span><b>2k 个提案全部结束后，候选 rollout 才开始</b>（并发执行；账本按固定顺序记录）</span><span class="arrow"></span></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td class="note">逐候选产出轨迹与交付物 → 作为 pool 证据</td><td></td><td></td><td></td></tr>
           <tr><td></td><td></td><td></td><td class="msg" colspan="3"><span class="label"><span class="n">④</span><b>k 个合成器各自产出终版</b>：merge / 整体采纳 / KEEP_BASE</span><span class="arrow"></span></td></tr>
           <tr><td></td><td></td><td class="note">每个终版再 rollout 1 次（这就是盲选的输入）</td><td></td><td></td><td></td></tr>
           <tr><td></td><td></td><td></td><td></td><td class="msg" colspan="2"><span class="label"><span class="n">⑤</span><b>匿名盲选</b>：只给产物文本，A/B/C 打乱</span><span class="arrow"></span></td></tr>
-          <tr><td class="note">写 <span class="mono">selection.json</span>：chosen_label / why / id_map</td><td></td><td></td><td></td><td class="note">选择失败 → 回退到已交付基线</td><td></td></tr>
+          <tr><td class="note">写 <span class="mono">selection.json</span>：chosen_label / why / id_map</td><td></td><td></td><td></td><td class="note">选择失败 → 回退到排序后的第一个 final；池内没有基线</td><td></td></tr>
           <tr><td></td><td></td><td></td><td></td><td></td><td class="msg"><span class="label"><span class="n">⑥</span><b>反思</b>：diff 全部候选 vs base，写 edits 表 + 一条 lesson</span><span class="arrow rtl"></span></td></tr>
           <tr><td class="note">过门槛才 <span class="mono">library.add</span>；重建 INDEX.md</td><td></td><td></td><td></td><td></td><td class="note">无对比 → NO_ENTRY</td></tr>
+          <tr><td class="msg"><span class="label"><span class="n">⑦</span><b>按 mode 合并 summary 并原子写盘</b></span><span class="arrow"></span></td><td></td><td></td><td></td><td></td><td></td></tr>
           <tr><td class="note"><b>异常分支</b>：任一阶段异常 → 记 <span class="mono">fell_back</span>，任务继续；全部失败 → status=base-failed</td><td class="note">ProposerError → 阶段失败</td><td class="note">rollout 死亡 → RunView(ok=false)，不中断</td><td class="note">无有效候选 → 选择错误</td><td class="note">选择失败 → fallback</td><td class="note">反思失败 → 不阻拦采纳</td></tr>
         </tbody>
       </table></div>
@@ -1397,12 +1413,12 @@ executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/</pre>
       <thead><tr><th>术语</th><th>定义</th><th>容易混淆的点</th></tr></thead>
       <tbody>
         <tr><td><b>harness</b></td><td>模型之外让它成为 agent 的系统：提示词、工具、记忆、技能、编排</td><td>不是模型本身，也不是权重</td></tr>
-        <tr><td><b>RSI</b></td><td>Recursive Self-Improvement，递归自我改进</td><td>这里指 harness 层，不是权重层</td></tr>
+        <tr><td><b>RSI</b></td><td>Recursive Self-Improvement，递归自我改进；本项目通过迭代修改模型外围的 harness 实现</td><td>这里指 harness 层，不更新模型权重</td></tr>
         <tr><td><b>任务级递归</b></td><td>在当前任务上做 Propose–Probe–Compose</td><td>不跨任务继承树</td></tr>
         <tr><td><b>harnessing 级递归</b></td><td>任务后反思，把可迁移经验写进领域库</td><td>传的是经验，不是 harness</td></tr>
         <tr><td><b>c1–c8</b></td><td>八个可编辑组件</td><td>路径随执行器不同；缺的组件（如 DSH/Hermes 的子代理）不可编辑</td></tr>
         <tr><td><b>INV / DOM</b></td><td>不变式维度 / 领域维度</td><td>不是「简单/困难」</td></tr>
-        <tr><td><b>stage</b></td><td>一次提案+校验+采纳（标签 inv1/dom1/agg1/c1…）</td><td>不是一次 rollout</td></tr>
+        <tr><td><b>stage（阶段）</b></td><td>一次编辑会话及其结果收集、校验和记录（标签 inv1/dom1/agg1/c1…）；失败时可回退到输入树</td><td>stage 与 rollout 分开计数；最终采纳发生在 selection</td></tr>
         <tr><td><b>label</b></td><td>阶段或 rollout 的名字；同时是 run_id 的后缀</td><td>同一 label 在不同任务下不冲突</td></tr>
         <tr><td><b>rollout</b></td><td>一次真实执行（求解器跑任务）</td><td>与「编辑会话」是两类计费单位</td></tr>
         <tr><td><b>final</b></td><td>被合成的终版（agg1..k / c1..k）</td><td>只有 final 进选择池</td></tr>
@@ -1412,8 +1428,8 @@ executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/</pre>
         <tr><td><b>绊线</b></td><td>发现泄漏就抛错的检查（grader markers / leak_globs）</td><td>不是告警，是硬失败</td></tr>
         <tr><td><b>指纹</b></td><td>sha256（调用内容 + 证据路径与字节）[:16]</td><td>路径参与，所以两模式不互相命中</td></tr>
         <tr><td><b>namespace</b></td><td><span class="mono">&lt;bench&gt;-&lt;substrate&gt;-&lt;mode&gt;&lt;k&gt;[-s&lt;seed&gt;][-&lt;tag&gt;]</span></td><td>决定 run 目录与缓存身份</td></tr>
-        <tr><td><b>substrate</b></td><td>执行器（oc / cx）</td><td>与 proposer 通道独立</td></tr>
-        <tr><td><b>install mode</b></td><td>树投递进执行器的方式（4 种）</td><td>换一种就换基线</td></tr>
+        <tr><td><b>substrate（执行器适配层）</b></td><td>把 harness 树安装到 agent 框架、组装启动参数、运行并渲染轨迹</td><td>与 proposer 的模型调用通道独立</td></tr>
+        <tr><td><b>install mode（安装模式）</b></td><td>把 harness 文件投影到执行器工作区或配置目录的方式</td><td>具体模式由 substrate 与基准配置决定</td></tr>
         <tr><td><b>留出集</b></td><td>不参与改进、只用于评估的任务切分</td><td>当前只在评测时使用</td></tr>
       </tbody>
     </table>
