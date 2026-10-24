@@ -42,6 +42,12 @@ _ALIASES = {
     "opencode": "oc",
     "codex": "cx",
     "hm": "hermes",
+    # Manifest substrates whose product name people type differently.
+    "qwen-code": "qwen",
+    "qianwencode": "qwen",
+    "qianwen": "qwen",
+    "codebuddy": "workbuddy",
+    "cbc": "workbuddy",
 }
 _EXTRA: dict[str, Callable[..., Substrate]] = {}
 

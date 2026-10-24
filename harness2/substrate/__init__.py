@@ -16,8 +16,8 @@
 
 `OpencodeSubstrate` (oc) and `CodexSubstrate` (cx) are Python classes with native
 benchmark launchers. Everything else is a JSON manifest turned into a `GenericSubstrate`
-(dsh, hermes, or a framework you add); `registry` resolves names, `host` runs a generic
-workspace rollout, and `manifest` owns the schema.
+(dsh, hermes, qwen, workbuddy, or a framework you add); `registry` resolves names, `host`
+runs a generic workspace rollout, and `manifest` owns the schema.
 """
 
 from .base import Install, Launcher, RunRequest, Substrate

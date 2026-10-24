@@ -1,0 +1,71 @@
+{
+  "name": "qwen",
+  "label": "Qwen Code (QianwenCode)",
+  "surface": {
+    "always_on": [
+      "QWEN.md"
+    ],
+    "always_on_max": 24000,
+    "always_on_cap_reason": "Qwen Code concatenates the memory files (QWEN.md at the project root plus the user file under $QWEN_HOME) into every request, so the always-on text is paid on every turn",
+    "skill_dir": "skills",
+    "skill_name_rule": "must_match",
+    "skills_auto_advertised": true,
+    "subagents_supported": false,
+    "subagent_dir": "sub_agents",
+    "plugin_dir": null,
+    "hooks_file": null,
+    "compile_skill_scripts": true,
+    "reject_empty_always_on": true,
+    "trigger_line": "- When {desc}, load the `{name}` skill.\n",
+    "trigger_hint": "Skills are advertised by name+description; make the description name the situation.",
+    "stubs": [
+      {
+        "path": "skills/README.md",
+        "body": "<!-- c6: Qwen Code reads user skills from $QWEN_HOME/skills (and project skills from .qwen/skills); this tree's skills/ directory is installed to $QWEN_HOME/skills. YAML frontmatter needs `name:` matching the directory and `description:`. Helpers travel under the skill's own scripts/. -->\n"
+      },
+      {
+        "path": "scripts/README.md",
+        "body": "<!-- c7: deterministic helpers, run as `python3 scripts/<name>.py` from the workspace. -->\n"
+      }
+    ]
+  },
+  "install": {
+    "mode": "split",
+    "root": ".qwen",
+    "entries": [
+      "QWEN.md",
+      "scripts"
+    ],
+    "home_entries": [
+      "skills"
+    ],
+    "seed_env": "QWEN_HOME",
+    "seed_default": "~/.qwen",
+    "seed_files": [
+      "settings.json",
+      ".env",
+      "oauth_creds.json"
+    ]
+  },
+  "exec": {
+    "argv": [
+      "{bin}",
+      "--approval-mode",
+      "yolo",
+      "--output-format",
+      "stream-json",
+      "--",
+      "{prompt}"
+    ],
+    "bin_env": "HARNESS2_QWEN_BIN",
+    "default_bin": "qwen",
+    "timeout": 3600,
+    "env": {
+      "QWEN_HOME": "{home}"
+    }
+  },
+  "trajectory": {
+    "format": "jsonl",
+    "path": "session.jsonl"
+  }
+}

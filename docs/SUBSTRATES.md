@@ -1,4 +1,4 @@
-# Substrates: OpenCode, Codex, DSH, Hermes, and your own
+# Substrates: OpenCode, Codex, DSH, Hermes, Qwen Code, WorkBuddy, and your own
 
 A **substrate** is the agent framework a solver rollout runs under. Harness² only edits that
 framework's *editable surface* (its prompts, skills, scripts, plugins/hooks), never its code.
@@ -9,6 +9,8 @@ framework's *editable surface* (its prompts, skills, scripts, plugins/hooks), ne
 | Codex | `cx` | Python class (`substrate/codex.py`), `codex_root` | `jb`, `lab`, `wb` |
 | **DSH** | `dsh` | JSON manifest (`substrate/manifests/dsh.json`) | `local` (any task dir) |
 | **Hermes** | `hermes` (`hm`) | JSON manifest (`substrate/manifests/hermes.json`) | `local` (any task dir) |
+| **Qwen Code** | `qwen` (`qianwen`, `qwen-code`, `qianwencode`) | JSON manifest (`substrate/manifests/qwen.json`) | `local` (any task dir) |
+| **WorkBuddy** | `workbuddy` (`codebuddy`, `cbc`) | JSON manifest (`substrate/manifests/workbuddy.json`) | `local` (any task dir) |
 | your framework | any name | a JSON manifest you drop in a manifest dir | `local` (any task dir) |
 
 `oc` / `cx` keep native benchmark launchers because JobBench/LAB/WorkBuddy own artifact
@@ -21,7 +23,7 @@ for the three professional benchmarks are a per-benchmark change, not a substrat
 ## 1. Quick start
 
 ```bash
-# a task directory (see §4)
+# a task directory (see §6)
 export HARNESS2_LOCAL_TASKS=$PWD/my-bench
 export HARNESS2_IMPROVER_MODEL=provider/model   # the proposer/selector model (required)
 export HARNESS2_DSH_BIN=/path/to/dsh          # or a wrapper on PATH
@@ -31,9 +33,16 @@ harness2 --bench local --substrate dsh --k 1 --mode parallel --dry-run
 harness2 --bench local --substrate dsh --k 1 --mode parallel
 harness2-judge --bench local --substrate dsh --k 1 --mode parallel
 harness2-report --bench local --substrate dsh --k 1 --mode parallel
+
+# the same loop under Qwen Code or WorkBuddy
+export HARNESS2_QWEN_BIN=/path/to/qwen
+export HARNESS2_WORKBUDDY_BIN=/path/to/codebuddy
+harness2 --bench local --substrate qwen --k 1 --mode parallel
+harness2 --bench local --substrate workbuddy --k 1 --mode parallel
 ```
 
-`--substrate` accepts the names in the first column (plus aliases `opencode`, `codex`, `hm`).
+`--substrate` accepts the names in the first column (plus aliases `opencode`, `codex`, `hm`,
+`qianwen`, `qwen-code`, `qianwencode`, `codebuddy`, `cbc`).
 `--local-tasks` overrides `HARNESS2_LOCAL_TASKS`.
 
 ### Using the same framework as the improver
@@ -149,7 +158,112 @@ already supports `trajectory.format: jsonl`).
 
 ---
 
-## 4. The local benchmark
+## 4. Qwen Code (QianwenCode)
+
+Upstream: [QwenLM/qwen-code](https://github.com/QwenLM/qwen-code), installed with
+`npm i -g @qwen-code/qwen-code` (binary `qwen`). Qwen Code is a Gemini-CLI-derived agent: its
+non-interactive mode prints the answer plus a JSON event stream, and it reads project memory and
+user skills out of a config directory.
+
+| component | tree path | installed to | why |
+|---|---|---|---|
+| c1 instructions | `QWEN.md` | `<workspace>/QWEN.md` | the project memory file is resolved in the cwd and concatenated into every request |
+| c6 skills | `skills/<name>/SKILL.md` | `$QWEN_HOME/skills/` | the user skill root is `<config dir>/skills`; the index is advertised by name+description |
+| c7 scripts | `scripts/*.py` | `<workspace>/scripts/` | deterministic helpers must be on the solver's cwd path |
+
+```json
+"install": {
+  "mode": "split", "root": ".qwen",
+  "entries": ["QWEN.md", "scripts"],
+  "home_entries": ["skills"],
+  "seed_env": "QWEN_HOME", "seed_default": "~/.qwen",
+  "seed_files": ["settings.json", ".env", "oauth_creds.json"]
+}
+```
+
+**Exec**: `qwen --approval-mode yolo --output-format stream-json -- "<task>"` with `QWEN_HOME`
+pointing at the staged home. `--` terminates options, so a task prompt that itself starts with
+`-` is still one positional argument; `stream-json` emits one JSON event per line, so the
+manifest declares `trajectory.format: jsonl` and the shared tolerant renderer maps it.
+
+Set `HARNESS2_QWEN_BIN` when `qwen` is not on `PATH`. `HARNESS2_QWEN_MODEL` is recorded in the
+run identity only — Qwen Code keeps its provider/model configuration in `$QWEN_HOME/settings.json`,
+which `seed_files` carries into the staged home.
+
+**Surface rules**:
+
+- skills are **auto-advertised** from the SKILL.md `name`/`description` frontmatter, so a trigger
+  line in `QWEN.md` is unnecessary (`skills_auto_advertised: true`);
+- subagents are not exposed: the tree grammar models a subagent as `<name>/AGENT.md`, while Qwen
+  Code resolves its agents through `--agents`/the session tool rather than that directory layout,
+  so `subagents_supported: false`;
+- hooks and extensions are `settings.json`/extension entries rather than a workspace file, so
+  neither is editable here.
+
+**Verified against** `@qwen-code/qwen-code` 0.26.0: the exec line above accepts the prompt and
+emits JSONL events (`system`/`assistant`/`result`), and `QWEN_HOME` relocates the config dir
+(`skills/`, `extensions/`, `settings.json`) as the install layout assumes.
+
+**Known limitation**: authentication is yours. Seed `$QWEN_HOME` (default `~/.qwen`) with a
+`settings.json` (or `.env`, or `oauth_creds.json`) that selects an auth type; an unauthenticated
+run stops with "No auth type is selected", produces no `output/`, and is recorded as a failed
+rollout rather than a score.
+
+---
+
+## 5. WorkBuddy (CodeBuddy CLI core)
+
+Upstream: [WorkBuddy](https://www.codebuddy.cn/docs/cli/quickstart), Tencent's agent product. Its
+automation surface is the **CodeBuddy CLI core**, installed with
+`npm i -g @tencent-ai/codebuddy-code` (binary `codebuddy`, also exposed as `cbc`). WorkBuddy keeps
+user state in `~/.workbuddy` (`WORKBUDDY_CONFIG_DIR`); the shared core also honors `~/.codebuddy`
+(`CODEBUDDY_CONFIG_DIR`). The manifest names both variables and points them at one staged home,
+so a rollout never writes into the real profile.
+
+| component | tree path | installed to | why |
+|---|---|---|---|
+| c1 instructions | `CODEBUDDY.md` | `<workspace>/CODEBUDDY.md` | the project memory file is loaded into every request (`CODEBUDDY.local.md` overrides it per user) |
+| c6 skills | `skills/<name>/SKILL.md` | `$WORKBUDDY_CONFIG_DIR/skills/` | the user skill root is `<config dir>/skills`; the index is advertised |
+| c7 scripts | `scripts/*.py` | `<workspace>/scripts/` | deterministic helpers must be on the solver's cwd path |
+
+```json
+"install": {
+  "mode": "split", "root": ".workbuddy",
+  "entries": ["CODEBUDDY.md", "scripts"],
+  "home_entries": ["skills"],
+  "seed_env": "WORKBUDDY_CONFIG_DIR", "seed_default": "~/.workbuddy",
+  "seed_files": ["settings.json", ".credentials.json", ".env"]
+}
+```
+
+**Exec**: `codebuddy -p "<task>" -y --output-format stream-json` with `WORKBUDDY_CONFIG_DIR` and
+`CODEBUDDY_CONFIG_DIR` pointing at the staged home. `-y` is `--dangerously-skip-permissions`:
+headless has no approval UI. `stream-json` emits one JSON event per line, so
+`trajectory.format: jsonl`.
+
+Set `HARNESS2_WORKBUDDY_BIN` when `codebuddy` is not on `PATH`. `HARNESS2_WORKBUDDY_MODEL` is
+recorded in the run identity only; model selection stays in the framework's own settings.
+
+**Surface rules**:
+
+- skills are auto-advertised from SKILL.md frontmatter (`skills_auto_advertised: true`);
+- subagents are not exposed: `.codebuddy/agents/<name>.md` is flat while the tree model is
+  `<name>/AGENT.md`, so `subagents_supported: false`;
+- hooks, permissions and MCP servers are `settings.json`/`.mcp.json` content rather than a
+  dedicated hook file, so they are not exposed either.
+
+**Verified against** `@tencent-ai/codebuddy-code` 2.174.0: the flags above run headless and
+stream JSONL (`system`/`assistant`/`result`); `CODEBUDDY_CONFIG_DIR` relocates `sessions/`,
+`projects/`, `plugins/` and `user-state.json` into the staged home. A few diagnostics paths
+(`logs/`, `diagnostics/`, `local_storage/`) remain under `~/.codebuddy`; they carry no task state.
+
+**Known limitation**: authentication is yours. Seed the config dir with a logged-in
+`settings.json`/`.credentials.json`; an unauthenticated run answers "Authentication required"
+with exit status 0, produces no `output/`, and is recorded as a failed rollout.
+
+---
+
+## 6. The local benchmark
 
 ```
 <root>/
@@ -169,7 +283,7 @@ so a solver that walks up from its workspace cannot reach `tasks/.../check.sh`:
   workspace/                     the tree as the framework read it
   workspace/input/               task files
   output/                        everything the run produced
-  session.log                    captured stdout/stderr
+  session.log | session.jsonl     the session stream (text or JSONL per the manifest)
   prompt.md  meta.json  .adapt_complete
 ```
 
@@ -180,7 +294,7 @@ task is **unscored**, never zero. This keeps the local benchmark honest without 
 
 ---
 
-## 5. Your own framework: a JSON manifest
+## 7. Your own framework: a JSON manifest
 
 Manifests are discovered in:
 
@@ -239,11 +353,17 @@ extraction + judge); the substrate itself does not change.
 
 ---
 
-## 6. Security notes
+## 8. Security notes
 
 - **DSH** is run with `DSH_PERMISSION_MODE=danger-full-access` because headless has no approval
   channel. Its sandbox only constrains file effects, not network/process visibility.
 - **Hermes** `-z` sets `HERMES_YOLO_MODE=1` (hardline command blacklist still applies).
+- **Qwen Code** runs with `--approval-mode yolo`, which auto-executes shell/write/edit at the
+  process's privilege level; the CLI prints that warning itself. Prefer a container for untrusted
+  tasks.
+- **WorkBuddy / CodeBuddy** runs with `-y` (`--dangerously-skip-permissions`): high-risk calls may
+  still prompt, but there is no UI to answer, so only use tasks whose commands are acceptable to
+  run unattended.
 - A manifest can point `{bin}` at anything: treat user manifest directories as code, like a
   plugin directory.
 - None of this is an OS sandbox. Run substrates inside a container or a disposable VM when the
@@ -251,7 +371,7 @@ extraction + judge); the substrate itself does not change.
 
 ---
 
-## 7. Verification
+## 9. Verification
 
 ```bash
 pytest tests/test_substrates.py -q        # manifests, split/home installs, local e2e, JSONL
@@ -260,4 +380,6 @@ pytest tests -q                          # full suite
 
 The end-to-end test registers a fake manifest substrate and a fake CLI, runs a real
 `schedule.run_task` (k=1), and asserts the 4k/3k ledger, the adopted final, and the produced
-artifact — no model credentials involved.
+artifact — no model credentials involved. `test_shipped_qwen_and_workbuddy_manifests` and
+`test_qwen_and_workbuddy_split_install_and_exec` pin the two product manifests: staged workspace
++ home layout, seeded credentials, and the exact argv/env each CLI needs.

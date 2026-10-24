@@ -93,7 +93,8 @@ class LocalAdapter:
         if not hasattr(self.substrate, "run_session"):
             raise ValueError(
                 f"substrate {substrate!r} has no generic host session; the local benchmark "
-                "needs a manifest substrate (dsh, hermes, or a JSON manifest of your own)"
+                "needs a manifest substrate (dsh, hermes, qwen, workbuddy, or a JSON "
+                "manifest of your own)"
             )
         self.spec = local_spec(self.root, self.substrate)
         self.model = (

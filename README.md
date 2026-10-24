@@ -108,10 +108,11 @@ alternatives, and the [Codex executor](docs/SETUP.md#codex-executor).
 
 ### Other substrates
 
-The three benchmarks run under OpenCode (`oc`) and Codex (`cx`). **DSH** (`dsh`) and
-**Hermes** (`hermes`) are supported through declarative manifests and run on the `local`
-benchmark against your own task directory; any other agent framework is a JSON manifest
-in `HARNESS2_SUBSTRATE_DIRS` or `~/.harness2/substrates/`. See
+The three benchmarks run under OpenCode (`oc`) and Codex (`cx`). **DSH** (`dsh`),
+**Hermes** (`hermes`), **Qwen Code** (`qwen`, alias `qianwencode`) and **WorkBuddy**
+(`workbuddy`, via the CodeBuddy CLI core) are supported through declarative manifests and run on
+the `local` benchmark against your own task directory; any other agent framework is a JSON
+manifest in `HARNESS2_SUBSTRATE_DIRS` or `~/.harness2/substrates/`. See
 [the substrate guide](docs/SUBSTRATES.md). DSH and Hermes can also act as the **improver**
 (`HARNESS2_IMPROVER_CHANNEL=dsh_cli|hermes_cli`), so the whole loop runs on either framework
 alone.

@@ -16,7 +16,8 @@
 how a tree is installed into it, how its CLI is invoked, and how its session stream is read.
 
 `GenericSubstrate` is the whole implementation. Adding a framework is a JSON file, not a
-Python module — the two built-in manifests (`dsh`, `hermes`) are themselves values here.
+Python module — the shipped manifests (`dsh`, `hermes`, `qwen`, `workbuddy`) are themselves
+values here.
 """
 
 from __future__ import annotations

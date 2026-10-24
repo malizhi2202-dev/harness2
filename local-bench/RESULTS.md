@@ -147,3 +147,48 @@ round-1 会话，只补跑缺失的 rollout 与 round 2。
 - Hermes 在 hard2 里遵守“别改 helper”的措辞，round 1 没修；在公平任务上基线又自己通过。
   要测 Hermes 的增益，需要更长/更弱模型/更专业任务。
 - 更强的结论需要 LAB / JobBench / WorkBuddy 上的 dsh/hermes 原生 launcher。
+
+## 待跑：Qwen Code / WorkBuddy
+
+新增两个 manifest substrate 与配套的本地任务集，任务与 `dsh-hard3` 完全一致（公平措辞 +
+带缺陷 helper：只加正数、多写一行 `-- reviewed --`），只是基线树的指令文件换成各自框架读的
+那一个：
+
+```
+local-bench/qwen/base/QWEN.md                     # qwen（QianwenCode）
+local-bench/qwen/base/scripts/load_ledger.py
+local-bench/qwen/tasks/accounting/ledger/{task.md,check.sh,files/ledger.dat}
+local-bench/workbuddy/base/CODEBUDDY.md           # workbuddy（CodeBuddy CLI 内核）
+local-bench/workbuddy/base/scripts/load_ledger.py
+local-bench/workbuddy/tasks/accounting/ledger/{task.md,check.sh,files/ledger.dat}
+```
+
+**这两个框架还没在本机登录，所以没有跑出分数。** 已核对的是接线（不花 token 也验证得动）：
+
+- `LocalAdapter(root, substrate="qwen"|"workbuddy")` 能发现 `accounting/ledger`、认出基线树，
+  `validate()` census 为 `always_on_chars=79 / n_files=2 / scripts=1`；
+- `materialise()` 之后 workspace 里是 `<QWEN.md|CODEBUDDY.md>` + `input/` + `scripts/`，
+  技能/凭据在暂存 home（`$QWEN_HOME` / `$WORKBUDDY_CONFIG_DIR`）；
+- 用本机装的两家 CLI 各跑了一次 base rollout：qwen 以 “No auth type is selected” 退出 1
+  （rollout 不标完成，下次重跑）；workbuddy 以 “Authentication required” 退出 0 且
+  `output/` 为空（产物检查不过，同样会重跑）。两边的会话流都按 JSONL 落在 `session.jsonl`。
+
+有凭据之后按下面跑（把 `HARNESS2_QWEN_MODEL` / `HARNESS2_WORKBUDDY_MODEL` 记成你自己用的模型，
+它们只进 run identity）：
+
+```bash
+export HARNESS2_LOCAL_TASKS=$PWD/local-bench/qwen
+export HARNESS2_QWEN_BIN=$(command -v qwen)
+export HARNESS2_QWEN_MODEL=your-provider/model
+HARNESS2_IMPROVER_CHANNEL=dsh_cli harness2 --bench local --substrate qwen \
+  --k 1 --mode parallel
+
+export HARNESS2_LOCAL_TASKS=$PWD/local-bench/workbuddy
+export HARNESS2_WORKBUDDY_BIN=$(command -v codebuddy)
+export HARNESS2_WORKBUDDY_MODEL=your-provider/model
+HARNESS2_IMPROVER_CHANNEL=dsh_cli harness2 --bench local --substrate workbuddy \
+  --k 1 --mode parallel
+```
+
+登录方式：`qwen` 用 `--auth-type`/`$QWEN_HOME/settings.json`，`codebuddy` 用 `/login` 写入
+`$WORKBUDDY_CONFIG_DIR`，manifest 的 `seed_files` 会把它们带进每次 rollout 的暂存 home。

@@ -1,0 +1,71 @@
+{
+  "name": "workbuddy",
+  "label": "WorkBuddy (CodeBuddy CLI core)",
+  "surface": {
+    "always_on": [
+      "CODEBUDDY.md"
+    ],
+    "always_on_max": 24000,
+    "always_on_cap_reason": "CodeBuddy/WorkBuddy loads the project memory file (CODEBUDDY.md) into every request, so the always-on text is paid on every turn",
+    "skill_dir": "skills",
+    "skill_name_rule": "must_match",
+    "skills_auto_advertised": true,
+    "subagents_supported": false,
+    "subagent_dir": "sub_agents",
+    "plugin_dir": null,
+    "hooks_file": null,
+    "compile_skill_scripts": true,
+    "reject_empty_always_on": true,
+    "trigger_line": "- When {desc}, load the `{name}` skill.\n",
+    "trigger_hint": "Skills are advertised by name+description; make the description name the situation.",
+    "stubs": [
+      {
+        "path": "skills/README.md",
+        "body": "<!-- c6: WorkBuddy runs the CodeBuddy CLI core, which reads user skills from <config dir>/skills (WORKBUDDY_CONFIG_DIR, default ~/.workbuddy) and project skills from .codebuddy/skills; this tree's skills/ directory is installed to the staged config dir. YAML frontmatter needs `name:` matching the directory and `description:`. Helpers travel under the skill's own scripts/. -->\n"
+      },
+      {
+        "path": "scripts/README.md",
+        "body": "<!-- c7: deterministic helpers, run as `python3 scripts/<name>.py` from the workspace. -->\n"
+      }
+    ]
+  },
+  "install": {
+    "mode": "split",
+    "root": ".workbuddy",
+    "entries": [
+      "CODEBUDDY.md",
+      "scripts"
+    ],
+    "home_entries": [
+      "skills"
+    ],
+    "seed_env": "WORKBUDDY_CONFIG_DIR",
+    "seed_default": "~/.workbuddy",
+    "seed_files": [
+      "settings.json",
+      ".credentials.json",
+      ".env"
+    ]
+  },
+  "exec": {
+    "argv": [
+      "{bin}",
+      "-p",
+      "{prompt}",
+      "-y",
+      "--output-format",
+      "stream-json"
+    ],
+    "bin_env": "HARNESS2_WORKBUDDY_BIN",
+    "default_bin": "codebuddy",
+    "timeout": 3600,
+    "env": {
+      "WORKBUDDY_CONFIG_DIR": "{home}",
+      "CODEBUDDY_CONFIG_DIR": "{home}"
+    }
+  },
+  "trajectory": {
+    "format": "jsonl",
+    "path": "session.jsonl"
+  }
+}

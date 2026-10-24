@@ -15,6 +15,7 @@
 """Substrate manifests, generic installs, the local benchmark, and the JSONL renderer."""
 
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -68,9 +69,97 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(m.trajectory.format, "text")
             self.assertGreater(m.surface.always_on_max, 0)
 
+    def test_shipped_qwen_and_workbuddy_manifests(self):
+        got = {m.name: m for m in discover_manifests()}
+        self.assertIn("qwen", got)
+        self.assertIn("workbuddy", got)
+        self.assertEqual(got["qwen"].surface.always_on, ("QWEN.md",))
+        self.assertEqual(got["workbuddy"].surface.always_on, ("CODEBUDDY.md",))
+        self.assertEqual(got["qwen"].exec.bin_env, "HARNESS2_QWEN_BIN")
+        self.assertEqual(got["workbuddy"].exec.bin_env, "HARNESS2_WORKBUDDY_BIN")
+        self.assertEqual(got["workbuddy"].exec.default_bin, "codebuddy")
+        for m in (got["qwen"], got["workbuddy"]):
+            self.assertEqual(m.install.mode, "split")
+            self.assertEqual(m.surface.skill_dir, "skills")
+            self.assertTrue(m.surface.skills_auto_advertised)
+            self.assertFalse(m.surface.subagents_supported)
+            self.assertTrue(m.surface.reject_empty_always_on)
+            # Both CLIs stream their events, so the shared JSONL renderer reads them.
+            self.assertEqual(m.trajectory.format, "jsonl")
+            self.assertEqual(m.trajectory.path, "session.jsonl")
+            self.assertGreater(m.surface.always_on_max, 0)
+            self.assertTrue(m.install.home_entries)
+            self.assertTrue(m.install.seed_files)
+
+    def test_qwen_and_workbuddy_split_install_and_exec(self):
+        cases = (
+            # name, framework home env, always-on file, env vars the exec must point at the home
+            ("qwen", "QWEN_HOME", "QWEN.md", ("QWEN_HOME",)),
+            (
+                "workbuddy",
+                "WORKBUDDY_CONFIG_DIR",
+                "CODEBUDDY.md",
+                ("WORKBUDDY_CONFIG_DIR", "CODEBUDDY_CONFIG_DIR"),
+            ),
+        )
+        for name, home_var, always, home_envs in cases:
+            with self.subTest(substrate=name), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                tree = write_tree(
+                    root / "tree",
+                    {
+                        always: "# base\n\nWork carefully.\n",
+                        "skills/hello/SKILL.md": (
+                            "---\nname: hello\ndescription: when greeting\n---\n# Hi\n"
+                        ),
+                        "scripts/sum.py": "print(1)\n",
+                    },
+                )
+                seed = root / "seed"
+                seed.mkdir()
+                (seed / "settings.json").write_text("{}\n", encoding="utf-8")
+                old = os.environ.get(home_var)
+                os.environ[home_var] = str(seed)
+                try:
+                    sub = registry.create(name)
+                    install = sub.materialise(tree, sub.surface(), {})
+                finally:
+                    if old is None:
+                        os.environ.pop(home_var, None)
+                    else:
+                        os.environ[home_var] = old
+                ws = Path(install.extras["workspace_dir"])
+                home = Path(install.extras["home"])
+                self.assertTrue((ws / always).is_file())
+                self.assertTrue((ws / "scripts/sum.py").is_file())
+                self.assertFalse((ws / "skills").exists())
+                self.assertTrue((home / "skills/hello/SKILL.md").is_file())
+                self.assertTrue((home / "settings.json").is_file())
+
+                argv, stdin = sub.run_argv(prompt="say hi", workspace=ws, home=home)
+                self.assertIsNone(stdin)
+                self.assertIn("say hi", argv)
+                if name == "qwen":
+                    # option terminator: a task prompt may itself start with "-"
+                    self.assertEqual(argv[-2:], ["--", "say hi"])
+                else:
+                    self.assertEqual(argv[1:3], ["-p", "say hi"])
+                    self.assertIn("-y", argv)
+                env = sub.run_env({}, workspace=ws, home=home)
+                for key in home_envs:
+                    self.assertEqual(env[key], str(home))
+
+    def test_manifest_preflight_honours_bin_env(self):
+        with tempfile.NamedTemporaryFile() as fh:
+            with patch.dict(os.environ, {"HARNESS2_QWEN_BIN": fh.name}):
+                registry.create("qwen").preflight()
+
     def test_registry_aliases_and_unknown(self):
         self.assertIn("dsh", registry.names())
         self.assertEqual(registry.canonical("hm"), "hermes")
+        self.assertEqual(registry.canonical("qianwencode"), "qwen")
+        self.assertEqual(registry.canonical("qwen-code"), "qwen")
+        self.assertEqual(registry.canonical("codebuddy"), "workbuddy")
         self.assertIsInstance(registry.create("dsh"), GenericSubstrate)
         with self.assertRaises(ValueError) as ctx:
             registry.create("nope")
