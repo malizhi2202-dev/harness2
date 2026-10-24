@@ -1169,6 +1169,16 @@ executions/&lt;ns&gt;/&lt;task&gt;/&lt;label&gt;/</pre>
       <p><b>原型与实现的差距</b>：原型假设了「run 列表 / 库浏览 / 报告」这些查询能力；当前实现只有 CLI + 文件。它读的是 <span class="mono">summary.json</span> 与 <span class="mono">library/</span>，所以差距在<b>查询层</b>，不在数据模型——§3.7 的 ER 就是可查询化的依据。</p>
       <p style="margin-top:6px">iframe 内是<b>独立页面</b>，可上下滚动；也可以点「新窗口打开」全屏阅读。原型页顶部的「回文档」会跳回本章锚点。</p>
     </div>
+    <div class="callout ok">
+      <p><b>单页交互实现</b>：这 7 页的信息架构已经合并成一个可直接打开的前端实现
+        <a href="prototype/app.html" target="_blank"><span class="mono">prototype/app.html</span></a>——
+        hash 路由、真实筛选与导出、候选 diff 抽屉、四态（loading / 空 / 错误 / 正常）切换、
+        键盘快捷键与 AA 对比度。数据仍是本条演示宇宙，不与 <span class="mono">runs/</span> 读取相连；
+        它验证的是「真实交互下」的手感，不是新的实测结论。要看盘上真实数据，用
+        <span class="mono">harness2-console --runs runs</span> 起一个只读服务（或
+        <span class="mono">--export</span> 烤一份快照）：同一套界面会把「演示数据」标记换成
+        「真实数据」，缺失的判分/diff 显示为缺失而不是补数字。</p>
+    </div>
 
     <h3 id="p1">6.1 总览 · run 身份与领域矩阵</h3>
     <p class="proto-note"><span class="chip warn">演示数据</span>回答「这次 run 覆盖了哪些领域、哪些任务已采纳、今天出过什么异常」。所有数字为演示值；唯一真实口径是 run 目录下的 <span class="mono">summary.json</span>。带 <span class="mono">*</span> 的 Δ 取自 README 报告口径（绝对分未给，故不显示 base→refined）。</p>

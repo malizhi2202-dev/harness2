@@ -60,6 +60,7 @@ https://github.com/user-attachments/assets/76b10548-b14b-4c8f-9aa5-a93662df4d56
 - [Experiments](#experiments)
 - [Web access](#web-access)
 - [Results and resume](#results-and-resume)
+- [Console over real runs](#console-over-real-runs)
 - [Citation](#citation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -196,6 +197,44 @@ reflection notes, and evaluation results.
 Repeat the same command to resume. Use a new `HARNESS2_RUNS_DIR` when changing
 models or task selection. See [results and resume](docs/EXPERIMENTS.md#results-and-resume)
 for details; each command also supports `--help`.
+
+## Console over real runs
+
+`harness2-console` serves the product console (`docs/product-design/prototype/app.html`) over
+the runs tree actually on disk, read-only:
+
+```bash
+harness2-console --runs runs --runs local-bench --port 8099              # http://127.0.0.1:8099/
+harness2-console --runs runs --runs local-bench --port 8099 --bind 0.0.0.0  # LAN, e.g. http://192.168.36.129:8099/
+harness2-console --runs runs --export /tmp/console.html                  # baked snapshot instead
+```
+
+Reruns are planned, not implicit: `GET /api/rerun?run=<ns>&task=<id>` builds the exact
+`harness2 …` command for that task's run (same namespace/k/mode, scoped by domain), and the
+"重跑" button shows it with a copy action. Starting the server with `--allow-run` additionally
+lets `POST /api/rerun` spawn that command on this host — off by default, because it inherits the
+server's environment and starts a real (costly) sweep.
+
+The server is read-only (apart from the explicitly enabled rerun) and has no authentication. It binds to `127.0.0.1` by default; `--bind
+0.0.0.0` exposes the same read-only view (run summaries, answers, trajectories, library) to your
+network, so only do that on a trusted one. The startup banner lists the LAN URLs.
+
+Every page reads real artefacts: `summary.json` (base / stages / finals / ledger / selection),
+`executions/` (answers and trajectories), `library/` (INDEX + EXPERIENCE), and `judged*.json`
+when it exists. Missing files stay missing — an unjudged run shows "还没有 judged.json" instead
+of an invented delta. There is no write path.
+
+It is real-time, with a real backend rather than a static export: `GET /api/state` rebuilds the
+model from disk and carries an `ETag` (304 when nothing moved; `?focus=`/`?task=` select the run
+and the run_detail), and `GET /api/events` is a server-sent-event stream that pushes a revision
+whenever an artefact changes. The page auto-syncs on `change` (deferring while a drawer or input
+is active, then showing a "有新数据 · 点击同步" pill), and falls back to 5s polling without
+`EventSource`.
+
+`GET /api/activity` answers "what is harness2 doing right now": live `harness2*` processes from
+`/proc`, the artefact writes inside a window, and a per-task phase inferred from which artefacts
+exist (there is no status file, and the page says so). `GET /api/config` reports the server, the
+data roots, available CLIs, and the `HARNESS2_*` environment (secrets masked).
 
 ## Citation
 

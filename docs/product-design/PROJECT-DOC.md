@@ -1,7 +1,7 @@
 # Harness² 项目文档
 
 > **版本**：v1 · 2026-10-23
-> **配套产物**：[`PRODUCT-DESIGN.html`](PRODUCT-DESIGN.html)（产品设计 + 架构 + 时序 + 难题 + 界面原型）、[`prototype/`](prototype/)（7 个可单独打开的控制台原型页）
+> **配套产物**：[`PRODUCT-DESIGN.html`](PRODUCT-DESIGN.html)（产品设计 + 架构 + 时序 + 难题 + 界面原型）、[`prototype/`](prototype/)（7 个可单独打开的控制台原型页 + 单页前端实现 `prototype/app.html`）
 > **代码位置**：`/home/malizhi/ai/harness2`（Python 43 模块 / 14,243 行，Apache-2.0）
 
 ---
@@ -342,8 +342,12 @@ erDiagram
 | `prototype/library.html` | 领域库：INDEX / EXPERIENCE / 门槛 / 空态 |
 | `prototype/ledger.html` | 账本：恒等式、规模换算、指纹 |
 | `prototype/report.html` | 报告：base vs refined、判分口径、复现 |
+| `prototype/app.html` | **单页前端实现**：9 个视图（含实时活动、配置与状态）+ hash 路由 + 真实筛选/导出/抽屉/四态/快捷键（自包含、零外链；开服务时读真实数据） |
+| `harness2/console_data.py` + `harness2-console` | 把真实 runs 树（summary/ledger/library/executions/judged）映射成控制台模型；只读服务或 `--export` 快照 |
+| `harness2/console_activity.py` | “此刻在干什么”：`/proc` 进程 + 窗口内产物写入 + 由产物推断的阶段（`GET /api/activity`） |
 | `prototype/assets/` | 设计令牌与外壳（复用同机参考文档的工业暗色系统） |
-| `../SUBSTRATES.md` | 执行器接入：OpenCode / Codex / DSH / Hermes / 自定义 manifest / local 基准 |
+| `prototype/README.md` | 静态原型页与单页实现的关系、打开方式、数据口径、改动指引 |
+| `../SUBSTRATES.md` | 执行器接入：OpenCode / Codex / DSH / Hermes / Qwen Code / WorkBuddy / 自定义 manifest / local 基准 |
 
 ---
 
