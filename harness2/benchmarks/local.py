@@ -26,16 +26,18 @@ runners because their artifact extraction and grading are benchmark-specific.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from .. import config
 from ..core import runmark as RM
 from ..core import tree as HT
-from ..core.spec import BenchPrompts, BenchSpec, ChannelSpec
+from ..core.spec import BenchPrompts, BenchSpec, resolve_channel_model
 from ..substrate import host, registry
 
 _LAYOUT = """local benchmark layout expected under {root}:
@@ -47,7 +49,7 @@ _LAYOUT = """local benchmark layout expected under {root}:
 
 
 def local_spec(root: Path, substrate) -> BenchSpec:
-    channel = ChannelSpec("opencode", config.IMPROVER_MODEL or "")
+    channel = resolve_channel_model(None, None, effort="high")
     return BenchSpec(
         name="local",
         runs_root=Path(root) / "runs",
@@ -74,9 +76,19 @@ class LocalAdapter:
         timeout: int | None = None,
         model: str | None = None,
         split_file: Path | None = None,
+        exec_root: Path | None = None,
     ):
         self.root = Path(root).expanduser().resolve()
         self.split_file = split_file
+        # Rollouts live OUTSIDE the task tree: a workspace under `tasks/` would let the solver
+        # walk up to `check.sh` and read the answer key. Stable hash -> resume still works.
+        digest = hashlib.sha1(str(self.root).encode()).hexdigest()[:12]
+        base = Path(
+            exec_root
+            or os.environ.get("HARNESS2_LOCAL_EXEC_DIR")
+            or Path(tempfile.gettempdir()) / "harness2-local"
+        )
+        self.exec_root = Path(base).expanduser().resolve() / f"{self.root.name}-{digest}"
         self.substrate = registry.create(substrate)
         if not hasattr(self.substrate, "run_session"):
             raise ValueError(
@@ -130,7 +142,7 @@ class LocalAdapter:
         return d
 
     def _run_dir(self, run_id: str) -> Path:
-        return self.root / "runs" / "executions" / run_id.replace("/", "__")
+        return self.exec_root / "executions" / run_id.replace("/", "__")
 
     def execute(
         self, task_id: str, harness_dir: Path | None, run_id: str, *, timeout: int | None = None
@@ -195,6 +207,7 @@ class LocalAdapter:
         self.substrate.preflight()
 
     def score(self, run_dir: Path, task_id: str) -> dict | None:
+        run_dir = Path(run_dir).resolve()
         check = self.root / "tasks" / task_id / "check.sh"
         if not check.is_file():
             return None

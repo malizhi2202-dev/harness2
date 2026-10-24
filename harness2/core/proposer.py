@@ -113,7 +113,7 @@ class Proposer:
                     "ANTHROPIC_MODEL": self.spec.model,
                 }
             )
-        else:
+        elif self.spec.kind == "opencode":
             e.update(
                 {
                     "GOOGLE_VERTEX_PROJECT": self.project,
@@ -121,6 +121,12 @@ class Proposer:
                     "VERTEXAI_LOCATION": self.region,
                 }
             )
+        elif self.spec.kind == "dsh_cli":
+            e["DSH_HOME"] = str(Path(config.DSH_HOME).expanduser())
+            e["DSH_PERMISSION_MODE"] = "danger-full-access"
+        elif self.spec.kind == "hermes_cli":
+            e["HERMES_HOME"] = str(Path(config.HERMES_HOME).expanduser())
+            e["HERMES_YOLO_MODE"] = "1"
         return e
 
     def call(
@@ -159,9 +165,13 @@ class Proposer:
                 if context_dir and Path(context_dir).is_dir():
                     shutil.copytree(context_dir, tmp / "context", dirs_exist_ok=True)
                 with _SEM if _SEM is not None else contextlib.nullcontext():
-                    text, cost, err = (
-                        self._claude_cli if self.spec.kind == "claude_cli" else self._opencode
-                    )(tmp, mission, system, wall)
+                    runner = {
+                        "claude_cli": self._claude_cli,
+                        "opencode": self._opencode,
+                        "dsh_cli": self._dsh_cli,
+                        "hermes_cli": self._hermes_cli,
+                    }[self.spec.kind]
+                    text, cost, err = runner(tmp, mission, system, wall)
                 spent_usd += cost
                 if not text.strip():
                     last = err or "empty reply"
@@ -249,6 +259,48 @@ class Proposer:
         elif p.returncode != 0 and not text.strip():
             err = f"rc={p.returncode}: {(p.stderr or '')[-300:]}"
         return text, float(payload.get("total_cost_usd") or 0.0), err
+
+    def _cli_prompt(self, mission: str, system: str) -> str:
+        """One prompt for a single-shot CLI session (these CLIs take no system flag)."""
+        return f"{system}\n\n---\n\n{mission}" if system else mission
+
+    def _dsh_cli(self, cwd: Path, mission: str, system: str, wall: int) -> tuple[str, float, str]:
+        """DSH as the improver: one headless session in the evidence workspace."""
+        cli = shutil.which(config.DSH_BIN) or config.DSH_BIN
+        p = subprocess.run(
+            [cli, "--profile", "headless", self._cli_prompt(mission, system)],
+            cwd=cwd,
+            env=self.env(),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=wall,
+            stdin=subprocess.DEVNULL,
+        )
+        text = p.stdout or ""
+        if not text.strip():
+            tail = (p.stderr or "").strip()[-300:]
+            return "", 0.0, f"rc={p.returncode}: {tail or 'empty reply'}"
+        return text, 0.0, ""
+
+    def _hermes_cli(self, cwd: Path, mission: str, system: str, wall: int) -> tuple[str, float, str]:
+        """Hermes as the improver: one `-z` session in the evidence workspace."""
+        cli = shutil.which(config.HERMES_BIN) or config.HERMES_BIN
+        p = subprocess.run(
+            [cli, "-z", self._cli_prompt(mission, system)],
+            cwd=cwd,
+            env=self.env(),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=wall,
+            stdin=subprocess.DEVNULL,
+        )
+        text = p.stdout or ""
+        if not text.strip():
+            tail = (p.stderr or "").strip()[-300:]
+            return "", 0.0, f"rc={p.returncode}: {tail or 'empty reply'}"
+        return text, 0.0, ""
 
     def _opencode(self, cwd: Path, mission: str, system: str, wall: int) -> tuple[str, float, str]:
         (cwd / "MISSION.md").write_text(

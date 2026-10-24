@@ -19,11 +19,14 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+from harness2 import config
 from harness2.benchmarks.local import LocalAdapter
 from harness2.core import schedule
 from harness2.core import tree as HT
-from harness2.core.proposer import Reply
+from harness2.core.proposer import Proposer, Reply
+from harness2.core.spec import ChannelSpec
 from harness2.core.tree import SurfaceSpec
 from harness2.substrate import registry
 from harness2.substrate.manifest import (
@@ -57,7 +60,7 @@ class ManifestTests(unittest.TestCase):
         got = {m.name: m for m in discover_manifests()}
         self.assertIn("dsh", got)
         self.assertIn("hermes", got)
-        self.assertEqual(got["dsh"].install.mode, "home_dir")
+        self.assertEqual(got["dsh"].install.mode, "split")
         self.assertEqual(got["hermes"].install.mode, "split")
         for m in (got["dsh"], got["hermes"]):
             self.assertTrue(m.surface.skills_auto_advertised)
@@ -127,7 +130,7 @@ class ManifestTests(unittest.TestCase):
             self.assertTrue((hdir / "config.yaml").is_file())
             self.assertTrue((hdir / ".env").is_file())
 
-    def test_dsh_home_install(self):
+    def test_dsh_split_install(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             tree = write_tree(root / "tree")
@@ -147,8 +150,10 @@ class ManifestTests(unittest.TestCase):
                     os.environ.pop("DSH_HOME", None)
                 else:
                     os.environ["DSH_HOME"] = old
+            ws = Path(install.extras["workspace_dir"])
             home = Path(install.extras["home"])
             self.assertEqual(home, Path(install.staging_dir) / "home" / ".dsh")
+            self.assertTrue((ws / "scripts/sum.py").is_file())
             self.assertTrue((home / "AGENTS.md").is_file())
             self.assertTrue((home / "skills/hello/SKILL.md").is_file())
             self.assertTrue((home / "settings.yaml").is_file())
@@ -192,6 +197,44 @@ class ManifestTests(unittest.TestCase):
             self.assertIn("[ACTION]", got)
             self.assertIn("[OBSERVATION]", got)
             self.assertIn("a.txt", got)
+
+
+class ChannelTests(unittest.TestCase):
+    def _script(self, root: Path) -> Path:
+        script = root / "fake_improver.py"
+        script.write_text(
+            "#!/usr/bin/env python3\n"
+            "import pathlib\n"
+            "pathlib.Path('context/harness/AGENTS.md').write_text('# edited by channel\\n')\n"
+            "print('<notes>edited</notes>')\n",
+            encoding="utf-8",
+        )
+        script.chmod(0o755)
+        return script
+
+    def _call(self, kind: str, binary_attr: str) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            script = self._script(root)
+            ctx = root / "context"
+            (ctx / "harness").mkdir(parents=True)
+            (ctx / "harness" / "AGENTS.md").write_text("# base\n", encoding="utf-8")
+            spec = ChannelSpec(kind, f"{kind}/default", timeout=30)
+            prop = Proposer(spec)
+            with patch.object(config, binary_attr, str(script)):
+                reply = prop.call(
+                    "edit the harness", ctx, "probe", harvest="context/harness", max_attempts=1
+                )
+            self.assertTrue(reply.ok)
+            self.assertEqual(reply.channel, kind)
+            self.assertIsNotNone(reply.workspace)
+            self.assertIn("edited by channel", (reply.workspace / "AGENTS.md").read_text())
+
+    def test_dsh_cli_channel(self):
+        self._call("dsh_cli", "DSH_BIN")
+
+    def test_hermes_cli_channel(self):
+        self._call("hermes_cli", "HERMES_BIN")
 
 
 class LocalBenchTests(unittest.TestCase):
@@ -249,7 +292,9 @@ class LocalBenchTests(unittest.TestCase):
 
     def test_execute_and_deliverable(self):
         self._fake_substrate()
-        adapter = LocalAdapter(self._local_root(), substrate="fake")
+        root = self._local_root()
+        adapter = LocalAdapter(root, substrate="fake")
+        self.assertNotIn(root, adapter.exec_root.parents)
         run_dir = adapter.execute("accounting/t1", None, "local/test/run1")
         self.assertTrue(adapter.delivered(run_dir))
         self.assertIn("answered: Add the numbers.", adapter.deliverable_text(run_dir))

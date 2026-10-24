@@ -112,11 +112,14 @@ The three benchmarks run under OpenCode (`oc`) and Codex (`cx`). **DSH** (`dsh`)
 **Hermes** (`hermes`) are supported through declarative manifests and run on the `local`
 benchmark against your own task directory; any other agent framework is a JSON manifest
 in `HARNESS2_SUBSTRATE_DIRS` or `~/.harness2/substrates/`. See
-[the substrate guide](docs/SUBSTRATES.md).
+[the substrate guide](docs/SUBSTRATES.md). DSH and Hermes can also act as the **improver**
+(`HARNESS2_IMPROVER_CHANNEL=dsh_cli|hermes_cli`), so the whole loop runs on either framework
+alone.
 
 ```bash
-harness2-check --bench local --substrate dsh
-harness2 --bench local --substrate dsh --k 1 --mode parallel --local-tasks ./my-bench
+HARNESS2_IMPROVER_CHANNEL=dsh_cli harness2-check --bench local --substrate dsh
+HARNESS2_IMPROVER_CHANNEL=dsh_cli harness2 --bench local --substrate dsh --k 1 \
+  --mode parallel --local-tasks ./my-bench
 ```
 
 ## Run a benchmark

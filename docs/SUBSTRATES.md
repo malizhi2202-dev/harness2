@@ -36,6 +36,30 @@ harness2-report --bench local --substrate dsh --k 1 --mode parallel
 `--substrate` accepts the names in the first column (plus aliases `opencode`, `codex`, `hm`).
 `--local-tasks` overrides `HARNESS2_LOCAL_TASKS`.
 
+### Using the same framework as the improver
+
+The proposer/selector channel is independent of the solver substrate. With DSH and Hermes
+installed, you can run the whole loop without OpenCode or the Claude CLI:
+
+```bash
+# DSH solves AND improves
+export HARNESS2_IMPROVER_CHANNEL=dsh_cli
+export HARNESS2_DSH_BIN=/path/to/dsh
+export HARNESS2_DSH_MODEL=deepseek-flash   # recorded in the identity; DSH uses its own settings.yaml
+
+# Hermes solves AND improves
+export HARNESS2_IMPROVER_CHANNEL=hermes_cli
+export HARNESS2_HERMES_BIN=/path/to/hermes
+export HARNESS2_HERMES_MODEL=deepseek-v4-pro
+```
+
+The channels are `opencode` (default), `claude_cli`, `dsh_cli`, `hermes_cli`. `dsh_cli` runs
+`dsh --profile headless <mission>` in the copied evidence workspace with
+`DSH_PERMISSION_MODE=danger-full-access`; `hermes_cli` runs `hermes -z <mission>` (which sets
+`HERMES_YOLO_MODE=1`). Both return the final assistant text as the `<notes>` reply and harvest
+`context/harness/`. They use the real `$DSH_HOME` / `$HERMES_HOME`, so sessions land in the
+normal local stores.
+
 ---
 
 ## 2. DSH (DeepSeek Harness)
@@ -46,15 +70,17 @@ DSH's editable surface is split between `$DSH_HOME` (default `~/.dsh`) and the p
 |---|---|---|---|
 | c1 instructions | `AGENTS.md` | `$DSH_HOME/AGENTS.md` | DSH loads the user-global file into every request (project `AGENTS.md` also works, but the global one survives any cwd) |
 | c6 skills | `skills/<name>/SKILL.md` | `$DSH_HOME/skills/` | rank-400 user skills; DSH advertises name+description and loads the body on demand |
-| c7 scripts | `scripts/*.py` | `$DSH_HOME/scripts/` | deterministic helpers the model runs with `bash`/`python3` |
+| c7 scripts | `scripts/*.py` | `<workspace>/scripts/` | deterministic helpers; they must be on the solver's cwd path, not in `$DSH_HOME` |
 
-**Install** is `home_dir` into a temporary `$DSH_HOME`; non-editable state is seeded from the
-real home so the profile/model/credentials still work:
+**Install** is a `split` layout: instructions + skills go to a temporary `$DSH_HOME`
+(seeded from the real home so profile/model/credentials still work), while `scripts/` is
+staged into the workspace where the solver runs:
 
 ```json
 "install": {
-  "mode": "home_dir", "root": ".dsh",
-  "entries": ["AGENTS.md", "skills", "scripts"],
+  "mode": "split", "root": ".dsh",
+  "entries": ["scripts"],
+  "home_entries": ["AGENTS.md", "skills"],
   "seed_env": "DSH_HOME", "seed_default": "~/.dsh",
   "seed_files": ["settings.yaml", ".credentials.yaml", ".env"]
 }
@@ -134,16 +160,20 @@ already supports `trajectory.format: jsonl`).
     check.sh                     optional pass/fail check (exit 0 = pass)
 ```
 
-Run directories are content-addressed and reusable:
+Run directories are content-addressed and reusable. They live **outside the task tree**
+(`/tmp/harness2-local/<root>-<hash>/executions/…` by default, or `HARNESS2_LOCAL_EXEC_DIR`),
+so a solver that walks up from its workspace cannot reach `tasks/.../check.sh`:
 
 ```
-<root>/runs/executions/<namespace>__<task>__<label>/
+<exec-root>/executions/<namespace>__<task>__<label>/
   workspace/                     the tree as the framework read it
   workspace/input/               task files
   output/                        everything the run produced
   session.log                    captured stdout/stderr
   prompt.md  meta.json  .adapt_complete
 ```
+
+Summaries, adopted harnesses and the library stay under `<root>/runs/`.
 
 `check.sh` runs after adoption with `OUTPUT_DIR`, `WORKSPACE` and `TASK_DIR` set; without it a
 task is **unscored**, never zero. This keeps the local benchmark honest without a rubric.

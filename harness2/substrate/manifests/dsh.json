@@ -30,12 +30,14 @@
     ]
   },
   "install": {
-    "mode": "home_dir",
+    "mode": "split",
     "root": ".dsh",
     "entries": [
-      "AGENTS.md",
-      "skills",
       "scripts"
+    ],
+    "home_entries": [
+      "AGENTS.md",
+      "skills"
     ],
     "seed_env": "DSH_HOME",
     "seed_default": "~/.dsh",

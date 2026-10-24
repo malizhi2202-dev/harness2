@@ -2,7 +2,7 @@
 
 > **版本**：v1 · 2026-10-23
 > **配套产物**：[`PRODUCT-DESIGN.html`](PRODUCT-DESIGN.html)（产品设计 + 架构 + 时序 + 难题 + 界面原型）、[`prototype/`](prototype/)（7 个可单独打开的控制台原型页）
-> **代码位置**：`/home/malizhi/ai/harness2`（Python 43 模块 / 14,142 行，Apache-2.0）
+> **代码位置**：`/home/malizhi/ai/harness2`（Python 43 模块 / 14,243 行，Apache-2.0）
 
 ---
 
@@ -349,8 +349,8 @@ erDiagram
 
 ## 附录 A · 实测数字（2026-10-23）
 
-- Python：43 模块 / 14,142 行（core 14 / 5,840；substrate 7 / 1,911；benchmarks 8 / 4,418；cli 9 / 1,111）
-- 测试：2 文件 / 605 行（含 substrate + local 端到端）
+- Python：43 模块 / 14,142 行（core 14 / 5,897；substrate 7 / 1,925；benchmarks 8 / 4,431；cli 9 / 1,121）
+- 测试：2 文件 / 650 行（含 substrate + local 端到端）
 - CLI 入口：7 个
 - 可编辑组件：8 个；基准：3 个；安装模式：4 种
 - 预算：每任务 4k rollouts / 3k 编辑会话

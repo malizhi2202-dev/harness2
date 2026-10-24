@@ -117,7 +117,7 @@
     </table>
 
     <div class="callout">
-      <p><b>与代码的关系：</b>本版数字来自对 <span class="mono">/home/malizhi/ai/harness2</span> 的实测扫描（2026-10-23）：Python <b>43</b> 个模块 / <b>14,142</b> 行（core 14 / 5,840；substrate 7 / 1,911；benchmarks 8 / 4,418；cli 9 / 1,111），<b>7</b> 个 CLI 入口，<b>2</b> 个测试文件（605 行），<b>4</b> 个基准适配器（含 local），<b>8</b> 个可编辑组件。凡属推测或尚未实现的内容，一律显式标注 <span class="tag plan">规划</span> 或 <span class="tag gap">缺口</span>。</p>
+      <p><b>与代码的关系：</b>本版数字来自对 <span class="mono">/home/malizhi/ai/harness2</span> 的实测扫描（2026-10-23）：Python <b>43</b> 个模块 / <b>14,243</b> 行（core 14 / 5,897；substrate 7 / 1,925；benchmarks 8 / 4,431；cli 9 / 1,121），<b>7</b> 个 CLI 入口，<b>2</b> 个测试文件（650 行），<b>4</b> 个基准适配器（含 local），<b>8</b> 个可编辑组件。凡属推测或尚未实现的内容，一律显式标注 <span class="tag plan">规划</span> 或 <span class="tag gap">缺口</span>。</p>
     </div>
     <div class="callout warn">
       <p><b>与 §6 原型的关系：</b>§6 是<strong>形态对齐</strong>，不是可用系统，也不是像素级设计交付。所有列表、指标、日志均为演示数据，每页顶部与浏览器框右上角都有「演示数据」标记。原型页在 <span class="mono">docs/product-design/prototype/</span>，也可脱离本文档单独打开。</p>
@@ -191,6 +191,7 @@
         <tr><td>断点续跑（summary + 产物指纹 + harness 指纹）</td><td><span class="tag shipped">已实现</span></td><td class="mono">core/schedule.py::_resume</td></tr>
         <tr><td>DSH / Hermes 执行器（声明式 manifest）</td><td><span class="tag shipped">已实现</span></td><td class="mono">substrate/manifests/{dsh,hermes}.json</td></tr>
         <tr><td>任意框架接入（自带 manifest + local 基准）</td><td><span class="tag shipped">已实现</span></td><td class="mono">docs/SUBSTRATES.md · --bench local</td></tr>
+        <tr><td>执行器自身作为改进者（DSH / Hermes）</td><td><span class="tag shipped">已实现</span></td><td class="mono">HARNESS2_IMPROVER_CHANNEL=dsh_cli|hermes_cli</td></tr>
         <tr><td>DSH/Hermes 跑三个专业基准的原生 launcher</td><td><span class="tag gap">缺口</span></td><td>§7.10 · 当前走 local 基准</td></tr>
         <tr><td>候选重复采样（n&gt;1 确认同一改动）</td><td><span class="tag gap">缺口</span></td><td>§7.4 · 当前每候选 1 次 rollout</td></tr>
         <tr><td>组件体积/数量上限（脚本、技能正文、库）</td><td><span class="tag gap">缺口</span></td><td>§7.5 · 仅 always-on 有硬上限</td></tr>
@@ -435,7 +436,7 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
       <thead><tr><th>概念</th><th>取值</th><th>作用</th></tr></thead>
       <tbody>
         <tr><td>substrate（执行器）</td><td class="mono">oc · cx · dsh · hermes</td><td>跑求解 rollout 的 agent 框架；决定可编辑面与安装方式。dsh/hermes 是 JSON manifest，其他框架照此扩展</td></tr>
-        <tr><td>通道 ChannelSpec</td><td class="mono">opencode · claude_cli</td><td>改进者/选择者/反思者的调用方式；与执行器独立</td></tr>
+        <tr><td>通道 ChannelSpec</td><td class="mono">opencode · claude_cli · dsh_cli · hermes_cli</td><td>改进者/选择者/反思者的调用方式；与执行器独立。dsh_cli/hermes_cli 让执行器自己当改进者</td></tr>
         <tr><td>安装模式</td><td class="mono">workspace_agents_md · home_dir_jinja · workspace_config · codex_root</td><td>把树投递进执行器的通道，换一种就换基线</td></tr>
         <tr><td>模型</td><td class="mono">HARNESS2_SOLVER_MODEL / _IMPROVER_MODEL</td><td>求解与改进可以是不同模型；opencode 需 provider 前缀</td></tr>
       </tbody>
@@ -602,7 +603,7 @@ library/&lt;bench&gt;/k&lt;k&gt;-&lt;variant&gt;/&lt;mode&gt;/&lt;domain&gt;/
       </tbody>
     </table>
     <div class="callout">
-      <p><b>规模事实</b>：43 个 Python 模块 / 14,142 行；core 5,840 行（41%），benchmarks 4,418 行（31%），substrate 1,911 行（14%），cli 1,111 行（8%）。测试 2 文件 / 605 行（<span class="mono">tests/test_workflow.py</span>、<span class="mono">tests/test_substrates.py</span>）——这是研究框架，不是生产服务，测试覆盖仍是缺口。</p>
+      <p><b>规模事实</b>：43 个 Python 模块 / 14,142 行；core 5,897 行（41%），benchmarks 4,419 行（31%），substrate 1,925 行（14%），cli 1,121 行（8%）。测试 2 文件 / 650 行（<span class="mono">tests/test_workflow.py</span>、<span class="mono">tests/test_substrates.py</span>）——这是研究框架，不是生产服务，测试覆盖仍是缺口。</p>
     </div>
 
     <h3 id="s3-5">3.5 接口一览</h3>
