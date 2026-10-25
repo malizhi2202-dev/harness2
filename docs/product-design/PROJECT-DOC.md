@@ -393,7 +393,7 @@ erDiagram
 | `harness2/console_activity.py` | “此刻在干什么”：`/proc` 进程 + 窗口内产物写入 + 由产物推断的阶段（`GET /api/activity`） |
 | `prototype/assets/` | 设计令牌与外壳（复用同机参考文档的工业暗色系统） |
 | `prototype/README.md` | 静态原型页与单页实现的关系、打开方式、数据口径、改动指引 |
-| `../SUBSTRATES.md` | 执行器接入：OpenCode / Codex / DSH / Hermes / Qwen Code / WorkBuddy / 自定义 manifest / local 基准 |
+| `../SUBSTRATES.md` | 执行器接入：OpenCode / Codex / DSH / Hermes / Qwen Code / WorkBuddy / Claude Code / 自定义 manifest / local 基准 |
 
 ---
 

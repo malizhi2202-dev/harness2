@@ -1,4 +1,4 @@
-# Substrates: OpenCode, Codex, DSH, Hermes, Qwen Code, WorkBuddy, and your own
+# Substrates: OpenCode, Codex, DSH, Hermes, Qwen Code, WorkBuddy, Claude Code, and your own
 
 A **substrate** is the agent framework a solver rollout runs under. Harness² only edits that
 framework's *editable surface* (its prompts, skills, scripts, plugins/hooks), never its code.
@@ -11,6 +11,7 @@ framework's *editable surface* (its prompts, skills, scripts, plugins/hooks), ne
 | **Hermes** | `hermes` (`hm`) | JSON manifest (`substrate/manifests/hermes.json`) | `local` (any task dir) |
 | **Qwen Code** | `qwen` (`qianwen`, `qwen-code`, `qianwencode`) | JSON manifest (`substrate/manifests/qwen.json`) | `local` (any task dir) |
 | **WorkBuddy** | `workbuddy` (`codebuddy`, `cbc`) | JSON manifest (`substrate/manifests/workbuddy.json`) | `local` (any task dir) |
+| **Claude Code** | `claude` (`claude-code`) | JSON manifest (`substrate/manifests/claude.json`) | `local` (any task dir) |
 | your framework | any name | a JSON manifest you drop in a manifest dir | `local` (any task dir) |
 
 `oc` / `cx` keep native benchmark launchers because JobBench/LAB/WorkBuddy own artifact
@@ -23,7 +24,7 @@ for the three professional benchmarks are a per-benchmark change, not a substrat
 ## 1. Quick start
 
 ```bash
-# a task directory (see §6)
+# a task directory (see §7)
 export HARNESS2_LOCAL_TASKS=$PWD/my-bench
 export HARNESS2_IMPROVER_MODEL=provider/model   # the proposer/selector model (required)
 export HARNESS2_DSH_BIN=/path/to/dsh          # or a wrapper on PATH
@@ -42,7 +43,7 @@ harness2 --bench local --substrate workbuddy --k 1 --mode parallel
 ```
 
 `--substrate` accepts the names in the first column (plus aliases `opencode`, `codex`, `hm`,
-`qianwen`, `qwen-code`, `qianwencode`, `codebuddy`, `cbc`).
+`qianwen`, `qwen-code`, `qianwencode`, `codebuddy`, `cbc`, `claude-code`).
 `--local-tasks` overrides `HARNESS2_LOCAL_TASKS`.
 
 ### Using the same framework as the improver
@@ -263,7 +264,63 @@ with exit status 0, produces no `output/`, and is recorded as a failed rollout.
 
 ---
 
-## 6. The local benchmark
+## 6. Claude Code
+
+Upstream: [Claude Code](https://docs.claude.com/en/docs/claude-code) — also what the VS Code
+extension (`anthropic.claude-code`) runs. Headless form: `claude -p --output-format stream-json
+--verbose --dangerously-skip-permissions`.
+
+| component | tree path | installed to | why |
+|---|---|---|---|
+| c1 instructions | `CLAUDE.md` | `<workspace>/CLAUDE.md` | project memory is concatenated into every request (the user-level `$CLAUDE_CONFIG_DIR/CLAUDE.md` is loaded too) |
+| c6 skills | `skills/<name>/SKILL.md` | `$CLAUDE_CONFIG_DIR/skills/` | personal skills root; names+descriptions are advertised by the CLI |
+| c7 scripts | `scripts/*.py` | `<workspace>/scripts/` | deterministic helpers must be on the solver's cwd path |
+
+```json
+"install": {
+  "mode": "split", "root": ".claude",
+  "entries": ["CLAUDE.md", "scripts"],
+  "home_entries": ["skills"],
+  "seed_env": "CLAUDE_CONFIG_DIR", "seed_default": "~/.claude",
+  "seed_files": ["settings.json", ".credentials.json", ".env"]
+}
+```
+
+**Exec**: `claude -p "<task>" --output-format stream-json --verbose
+--dangerously-skip-permissions` with `CLAUDE_CONFIG_DIR` pointing at the staged home, so a probe
+never edits the real `~/.claude`. `-p`/`--print` is the non-interactive mode, `--verbose` is
+required for `stream-json`, and the skip-permissions flag is what lets tools run unattended.
+
+Set `HARNESS2_CLAUDE_BIN` when `claude` is not on `PATH` — e.g. the VS Code extension ships one:
+
+```bash
+export HARNESS2_CLAUDE_BIN=~/.vscode-server/extensions/anthropic.claude-code-*/resources/native-binary/claude
+harness2 --bench local --substrate claude --k 1 --mode parallel --local-tasks local-bench/claude
+```
+
+`HARNESS2_CLAUDE_MODEL` is recorded in the run identity only; the CLI keeps its own model
+selection in settings.
+
+**Also an improver**: `HARNESS2_IMPROVER_CHANNEL=claude_cli` uses the same binary to propose
+harness edits (`claude --dangerously-skip-permissions -p --output-format json`); it now honours
+`HARNESS2_CLAUDE_BIN` too, so the VS Code extension binary works without a `PATH` shim.
+
+**Surface rules**:
+
+- skills are auto-advertised from frontmatter (`skills_auto_advertised: true`);
+- subagents are not exposed: `.claude/agents/<name>.md` is flat while the tree models
+  `<name>/AGENT.md`, so `subagents_supported: false`;
+- hooks and permissions live in `settings.json`, not a dedicated hook file, so they are not exposed.
+
+**Known limitation**: the staged config dir starts from `settings.json` / `.credentials.json` /
+`.env` seeded out of `$CLAUDE_CONFIG_DIR`. Without credentials there it answers "Not logged in";
+seed one of those (or put `ANTHROPIC_API_KEY` in `.env`). The VS Code extension and the CLI share
+`~/.claude` and project `.claude/`, so a harness adopted by a run is the same surface the
+extension reads after a reload.
+
+---
+
+## 7. The local benchmark
 
 ```
 <root>/
@@ -294,7 +351,7 @@ task is **unscored**, never zero. This keeps the local benchmark honest without 
 
 ---
 
-## 7. Your own framework: a JSON manifest
+## 8. Your own framework: a JSON manifest
 
 Manifests are discovered in:
 
@@ -353,7 +410,7 @@ extraction + judge); the substrate itself does not change.
 
 ---
 
-## 8. Security notes
+## 9. Security notes
 
 - **DSH** is run with `DSH_PERMISSION_MODE=danger-full-access` because headless has no approval
   channel. Its sandbox only constrains file effects, not network/process visibility.
@@ -361,6 +418,8 @@ extraction + judge); the substrate itself does not change.
 - **Qwen Code** runs with `--approval-mode yolo`, which auto-executes shell/write/edit at the
   process's privilege level; the CLI prints that warning itself. Prefer a container for untrusted
   tasks.
+- **Claude Code** runs with `--dangerously-skip-permissions` (all tool calls auto-approved) and a
+  staged `CLAUDE_CONFIG_DIR`; only use it for tasks whose commands are acceptable unattended.
 - **WorkBuddy / CodeBuddy** runs with `-y` (`--dangerously-skip-permissions`): high-risk calls may
   still prompt, but there is no UI to answer, so only use tasks whose commands are acceptable to
   run unattended.
@@ -371,7 +430,7 @@ extraction + judge); the substrate itself does not change.
 
 ---
 
-## 9. Verification
+## 10. Verification
 
 ```bash
 pytest tests/test_substrates.py -q        # manifests, split/home installs, local e2e, JSONL

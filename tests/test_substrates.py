@@ -73,6 +73,12 @@ class ManifestTests(unittest.TestCase):
         got = {m.name: m for m in discover_manifests()}
         self.assertIn("qwen", got)
         self.assertIn("workbuddy", got)
+        self.assertIn("claude", got)
+        claude = got["claude"]
+        self.assertEqual(claude.surface.always_on, ("CLAUDE.md",))
+        self.assertEqual(claude.exec.bin_env, "HARNESS2_CLAUDE_BIN")
+        self.assertEqual(claude.install.seed_env, "CLAUDE_CONFIG_DIR")
+        self.assertEqual(claude.exec.env.get("CLAUDE_CONFIG_DIR"), "{home}")
         self.assertEqual(got["qwen"].surface.always_on, ("QWEN.md",))
         self.assertEqual(got["workbuddy"].surface.always_on, ("CODEBUDDY.md",))
         self.assertEqual(got["qwen"].exec.bin_env, "HARNESS2_QWEN_BIN")
@@ -101,6 +107,7 @@ class ManifestTests(unittest.TestCase):
                 "CODEBUDDY.md",
                 ("WORKBUDDY_CONFIG_DIR", "CODEBUDDY_CONFIG_DIR"),
             ),
+            ("claude", "CLAUDE_CONFIG_DIR", "CLAUDE.md", ("CLAUDE_CONFIG_DIR",)),
         )
         for name, home_var, always, home_envs in cases:
             with self.subTest(substrate=name), tempfile.TemporaryDirectory() as td:
@@ -142,6 +149,11 @@ class ManifestTests(unittest.TestCase):
                 if name == "qwen":
                     # option terminator: a task prompt may itself start with "-"
                     self.assertEqual(argv[-2:], ["--", "say hi"])
+                elif name == "claude":
+                    self.assertEqual(argv[1:3], ["-p", "say hi"])
+                    self.assertIn("--output-format", argv)
+                    self.assertIn("stream-json", argv)
+                    self.assertIn("--dangerously-skip-permissions", argv)
                 else:
                     self.assertEqual(argv[1:3], ["-p", "say hi"])
                     self.assertIn("-y", argv)
@@ -153,6 +165,8 @@ class ManifestTests(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as fh:
             with patch.dict(os.environ, {"HARNESS2_QWEN_BIN": fh.name}):
                 registry.create("qwen").preflight()
+            with patch.dict(os.environ, {"HARNESS2_CLAUDE_BIN": fh.name}):
+                registry.create("claude").preflight()
 
     def test_registry_aliases_and_unknown(self):
         self.assertIn("dsh", registry.names())
@@ -160,6 +174,7 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(registry.canonical("qianwencode"), "qwen")
         self.assertEqual(registry.canonical("qwen-code"), "qwen")
         self.assertEqual(registry.canonical("codebuddy"), "workbuddy")
+        self.assertEqual(registry.canonical("claude-code"), "claude")
         self.assertIsInstance(registry.create("dsh"), GenericSubstrate)
         with self.assertRaises(ValueError) as ctx:
             registry.create("nope")

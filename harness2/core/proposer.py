@@ -220,7 +220,7 @@ class Proposer:
     def _claude_cli(
         self, cwd: Path, mission: str, system: str, wall: int
     ) -> tuple[str, float, str]:
-        cli = shutil.which("claude") or "claude"
+        cli = os.environ.get("HARNESS2_CLAUDE_BIN", "").strip() or shutil.which("claude") or "claude"
         cmd = [
             cli,
             "--dangerously-skip-permissions",

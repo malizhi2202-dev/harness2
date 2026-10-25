@@ -1,0 +1,71 @@
+{
+  "name": "claude",
+  "label": "Claude Code",
+  "surface": {
+    "always_on": [
+      "CLAUDE.md"
+    ],
+    "always_on_max": 24000,
+    "always_on_cap_reason": "Claude Code concatenates CLAUDE.md (project memory plus ~/.claude/CLAUDE.md) into every request, so the always-on text is paid on every turn",
+    "skill_dir": "skills",
+    "skill_name_rule": "must_match",
+    "skills_auto_advertised": true,
+    "subagents_supported": false,
+    "subagent_dir": "sub_agents",
+    "plugin_dir": null,
+    "hooks_file": null,
+    "compile_skill_scripts": true,
+    "reject_empty_always_on": true,
+    "trigger_line": "- When {desc}, load the `{name}` skill.\n",
+    "trigger_hint": "Skills are advertised by name+description; make the description name the situation.",
+    "stubs": [
+      {
+        "path": "skills/README.md",
+        "body": "<!-- c6: Claude Code reads user skills from $CLAUDE_CONFIG_DIR/skills (default ~/.claude/skills) and project skills from .claude/skills; this tree's skills/ directory is installed to the staged config dir. YAML frontmatter needs `name:` matching the directory and `description:`. Helpers travel under the skill's own scripts/. -->\n"
+      },
+      {
+        "path": "scripts/README.md",
+        "body": "<!-- c7: deterministic helpers, run as `python3 scripts/<name>.py` from the workspace. -->\n"
+      }
+    ]
+  },
+  "install": {
+    "mode": "split",
+    "root": ".claude",
+    "entries": [
+      "CLAUDE.md",
+      "scripts"
+    ],
+    "home_entries": [
+      "skills"
+    ],
+    "seed_env": "CLAUDE_CONFIG_DIR",
+    "seed_default": "~/.claude",
+    "seed_files": [
+      "settings.json",
+      ".credentials.json",
+      ".env"
+    ]
+  },
+  "exec": {
+    "argv": [
+      "{bin}",
+      "-p",
+      "{prompt}",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--dangerously-skip-permissions"
+    ],
+    "bin_env": "HARNESS2_CLAUDE_BIN",
+    "default_bin": "claude",
+    "timeout": 3600,
+    "env": {
+      "CLAUDE_CONFIG_DIR": "{home}"
+    }
+  },
+  "trajectory": {
+    "format": "jsonl",
+    "path": "session.jsonl"
+  }
+}

@@ -47,6 +47,7 @@ _ALIASES = {
     "qianwencode": "qwen",
     "qianwen": "qwen",
     "codebuddy": "workbuddy",
+    "claude-code": "claude",
     "cbc": "workbuddy",
 }
 _EXTRA: dict[str, Callable[..., Substrate]] = {}
