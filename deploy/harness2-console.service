@@ -1,0 +1,32 @@
+# Harness2 Console — user unit (systemd --user).
+#
+# Install:
+#   cp deploy/harness2-console.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now harness2-console.service
+#
+# It binds every interface so the console is reachable on the LAN
+# (http://<host>:8099/). The service only reads run artefacts, except that
+# --allow-run lets POST /api/rerun spawn the generated harness2 command.
+# Drop --allow-run to make reruns generate-only.
+
+[Unit]
+Description=Harness2 Console (read-only runs console, 0.0.0.0:8099)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=%h/ai/harness2
+# claude / qwen / codebuddy live behind stable symlinks in ~/.local/bin
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/ai/harness2/.venv/bin/harness2-console --runs runs --runs local-bench --port 8099 --bind 0.0.0.0 --allow-run
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=10
+
+[Install]
+WantedBy=default.target

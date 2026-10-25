@@ -81,7 +81,10 @@ def _export(runs: list[Path], focus: str | None, out: Path) -> Path:
 def _config(runs: list[Path], host: str, port: int, allow_run: bool = False) -> dict:
     """Everything the settings page shows: server, data sources, tools, env (masked)."""
     exes = ("harness2", "harness2-judge", "harness2-report", "harness2-console",
-            "dsh", "hermes", "qwen", "codebuddy", "opencode", "codex")
+            "dsh", "hermes", "qwen", "claude", "codebuddy", "opencode", "codex")
+    bin_env = {"claude": "HARNESS2_CLAUDE_BIN", "qwen": "HARNESS2_QWEN_BIN",
+               "dsh": "HARNESS2_DSH_BIN", "hermes": "HARNESS2_HERMES_BIN",
+               "codebuddy": "HARNESS2_WORKBUDDY_BIN"}
     env = {}
     for key, value in sorted(os.environ.items()):
         if key.startswith("HARNESS2_"):
@@ -94,7 +97,8 @@ def _config(runs: list[Path], host: str, port: int, allow_run: bool = False) -> 
             "read_only": True, "allow_run": bool(allow_run),
         },
         "roots": [{"path": str(r), "exists": r.is_dir()} for r in runs],
-        "executables": {name: (shutil.which(name) or "") for name in exes},
+        "executables": {name: (os.environ.get(bin_env.get(name, ""), "").strip()
+                               or shutil.which(name) or "") for name in exes},
         "env": env,
         "endpoints": [
             ["GET /", "控制台页面"],
